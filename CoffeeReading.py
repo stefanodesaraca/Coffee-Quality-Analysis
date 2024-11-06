@@ -131,7 +131,14 @@ def cleanData(fileName: str) -> pd.DataFrame:
     coffee[["PrimaryProcessingMethod", "SecondaryProcessingMethod", "PrimaryColor", "SecondaryColor"]].fillna(np.nan) #Just confirming that all NAs will be the Numpy version of it
 
     coffee["Region"] = coffee["Region"].apply(lambda x: x.title()) #Standardizing the name of the region where the coffee comes from
+    coffee["Variety"] = coffee["Variety"].apply(lambda x: x.title()) #Standardizing the name of the coffee variety
 
+    coffee["Variety"] = coffee["Variety"].apply(lambda x: re.sub(r"[^\w\s]", ",", x))
+    coffee["Variety"] = coffee["Variety"].apply(lambda x: x.replace("Unknow", "Unknown"))
+    coffee["Variety"] = coffee["Variety"].apply(lambda x: x.replace("Unknownn", "Unknown"))
+    coffee["Variety"] = coffee["Variety"].apply(lambda x: x.replace(" , ", ","))
+    coffee["Variety"] = coffee["Variety"].apply(lambda x: x.replace(", ", ","))
+    coffee["Variety"] = coffee["Variety"].apply(lambda x: x.replace(" And ", ","))
 
     return coffee
 

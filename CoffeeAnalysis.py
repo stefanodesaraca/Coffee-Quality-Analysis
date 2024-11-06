@@ -71,6 +71,19 @@ def savePlots(plotFunction):
 
 def EDA(coffee: pd.DataFrame):
 
+    print("-------------------- Dataset Info --------------------")
+    print("*** COLUMNS ***")
+    print(list(coffee.columns), "\n")
+
+    print("*** COLUMN DATA TYPES ***")
+    print(coffee.dtypes, "\n\n")
+
+    print("*** NAs BY COLUMN ***")
+    print(coffee.isna().sum(), "\n")
+
+    print("*** SHORT OVERVIEW OF THE DATSET ***")
+    print(coffee.describe())
+
     print("-------------------- EDA --------------------")
 
     print("*** UNIQUE COFFEE PRIMARY COLORS ***")
@@ -82,11 +95,32 @@ def EDA(coffee: pd.DataFrame):
     print("*** UNIQUE REGIONS ***")
     print(coffee["Region"].unique(), "\n")
 
+    print("*** UNIQUE APPROXIMATE ALTITUDE ***")
+    print(coffee["ApproxAltitude"].unique(), "\n")
 
 
+    coffeeCharacteristics = ['Aroma', 'Flavor', 'Aftertaste', 'Acidity', 'Body', 'Balance', 'Uniformity', 'CleanCup', 'Sweetness', 'Overall', 'Defects', 'Cup Points', 'Moisture', 'C1Defects', 'Quakers', 'C2Defects']
 
 
-    print("*** CORRELATION BETWEEN NUMERICAL VARIABLES ***")
+    print("############################## COFFEE INFO BY VARIETY ##############################")
+
+    for c in coffeeCharacteristics:
+
+        print(f" ==================================== {c} ====================================".upper())
+
+        medianCharacteristic = coffee[["Variety", f"{c}"]].groupby("Variety", as_index=False).median().rename(columns={f"{c}": f"Median{c}"})
+        characteristicSTD = coffee[["Variety", f"{c}"]].groupby("Variety", as_index=False).std(ddof=0).rename(columns={f"{c}": f"STD{c}"}) #Setting the Degrees Of Freedom to 0 to exclude NAs from the standard deviation calculation
+        characteristicMinimum = coffee[["Variety", f"{c}"]].groupby("Variety", as_index=False).min().rename(columns={f"{c}": f"Minimum{c}"})
+        characteristicMaximum = coffee[["Variety", f"{c}"]].groupby("Variety", as_index=False).max().rename(columns={f"{c}": f"Maximum{c}"})
+
+        coffeeInfo = pd.merge(right=characteristicSTD, left=medianCharacteristic, how="outer", on="Variety")
+        coffeeInfo = pd.merge(right=characteristicMinimum, left=coffeeInfo, how="outer", on="Variety")
+        coffeeInfo = pd.merge(right=characteristicMaximum, left=coffeeInfo, how="outer", on="Variety")
+
+        print(coffeeInfo, "\n")
+
+
+    print("\n*** CORRELATION BETWEEN NUMERICAL VARIABLES ***")
     print(coffee.corr(numeric_only=True), "\n") #Checking correlations between the variables
 
 
