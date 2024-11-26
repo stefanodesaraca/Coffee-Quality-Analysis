@@ -1,5 +1,7 @@
 import os
 import json
+import inspect
+from scipy import stats
 import pandas as pd
 import numpy as np
 from tqdm import tqdm
@@ -17,6 +19,8 @@ viridisColorScale = sns.color_palette("viridis")
 magmaColorScale = sns.color_palette("magma")
 crestColorScale = sns.color_palette("crest")
 flareColorScale = sns.color_palette("flare")
+
+shapiroWilkPlotsPath = f"./CoffeeQualityAnalysis/ShapiroWilkTests"
 
 
 def savePlots(plotFunction):
@@ -71,6 +75,7 @@ def savePlots(plotFunction):
 
 def EDA(coffee: pd.DataFrame):
 
+
     print("-------------------- Dataset Info --------------------")
     print("*** COLUMNS ***")
     print(list(coffee.columns), "\n")
@@ -123,9 +128,24 @@ def EDA(coffee: pd.DataFrame):
     print("\n*** CORRELATION BETWEEN NUMERICAL VARIABLES ***")
     print(coffee.corr(numeric_only=True), "\n") #Checking correlations between the variables
 
+    @savePlots
+    def ShapiroWilkTest(self, targetFeatureName, data):
+        plotName = targetFeatureName + inspect.currentframe().f_code.co_name
+
+        print(f"Shapiro-Wilk Normality Test On \033[92m{targetFeatureName}\033[0m Target Feature")
+        _, SWH0PValue = stats.shapiro(data)  # Executing the Shapiro-Wilk Normality Test - This method returns a 'scipy.stats._morestats.ShapiroResult' class object with two parameters inside, the second is the H0 P-Value
+
+        print(f"Normality Probability (H0 Hypothesis P-Value): \033[92m{SWH0PValue}\033[0m")
+
+        fig, ax = plt.subplots()
+        SWQQPlot = stats.probplot(data, plot=ax)
+        ax.set_title(f"Probability Plot for {targetFeatureName}")
+
+        return plotName, SWQQPlot, shapiroWilkPlotsPath
 
 
 
+    ShapiroWilkTest() #TODO EXECUTE WITH ONE FEATURE AT A TIME WITH A FOR LOOP
 
 
 
