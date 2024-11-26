@@ -144,7 +144,6 @@ def EDA(coffee: pd.DataFrame):
         return plotName, SWQQPlot, shapiroWilkPlotsPath
 
 
-
     ShapiroWilkTest() #TODO EXECUTE WITH ONE FEATURE AT A TIME WITH A FOR LOOP
 
 
