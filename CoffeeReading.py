@@ -35,8 +35,8 @@ def convertAltitude(alt: str):
         minAlt = int(minAlt)
         maxAlt = int(maxAlt)
 
-        print(minAlt)
-        print(maxAlt)
+        #print(minAlt)
+        #print(maxAlt)
 
         approxAlt = np.mean([minAlt, maxAlt])
 
@@ -89,7 +89,7 @@ def cleanData(fileName: str) -> pd.DataFrame:
     coffee = coffee.drop(columns=["Unnamed: 0", "ICO Number", "Certification Body", "Certification Address", "Certification Contact"])
     coffee = coffee.rename(columns={"Country of Origin": "Origin", "Farm Name": "Farm", "Lot Number": "Lot", "Number of Bags": "NBags",
                                     "Bag Weight": "BagWeight", "Altitude": "ApproxAltitude", "In-Country Partner": "Partner", "Harvest Year": "HarvestYear",
-                                    "Processing Method": "ProcessingMethod", "Clean Cup": "CleanCup", "Total Cup Points": "Cup Points",
+                                    "Processing Method": "ProcessingMethod", "Clean Cup": "CleanCup", "Total Cup Points": "CupPoints",
                                     "Moisture Percentage": "Moisture", "Category One Defects": "C1Defects", "Category Two Defects": "C2Defects", "Grading Date": "GradingDate"})
 
     coffee = coffee.dropna() #Dropping the rows which contain NAs

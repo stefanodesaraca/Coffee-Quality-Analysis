@@ -13,6 +13,9 @@ import plotly.express as px
 from functools import wraps
 from warnings import simplefilter
 
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
+
 simplefilter("ignore")
 
 viridisColorScale = sns.color_palette("viridis")
@@ -22,9 +25,11 @@ flareColorScale = sns.color_palette("flare")
 
 os.makedirs("ShapiroWilkTests", exist_ok=True)
 os.makedirs("EDAPlots", exist_ok=True)
+os.makedirs("AnalysisPlots", exist_ok=True)
 
 shapiroWilkPlotsPath = f"./{os.curdir}/ShapiroWilkTests/"
 EDAPlotsPath = f"./{os.curdir}/EDAPlots/"
+AnalysisPlotsPath = f"./{os.curdir}/AnalysisPlots/"
 
 
 def savePlots(plotFunction):
@@ -82,6 +87,10 @@ def EDA(coffee: pd.DataFrame):
     numericVariablesName = coffee.select_dtypes(include=np.number).columns.tolist()
     numericVariablesName.remove("ID")
 
+    print("-------------------- Short Dataset Overview --------------------")
+
+    print(coffee.head(10))
+
     print("-------------------- Dataset Info --------------------")
     print("*** COLUMNS ***")
     print(list(coffee.columns), "\n")
@@ -110,7 +119,7 @@ def EDA(coffee: pd.DataFrame):
     print(coffee["ApproxAltitude"].unique(), "\n")
 
 
-    coffeeCharacteristics = ['Aroma', 'Flavor', 'Aftertaste', 'Acidity', 'Body', 'Balance', 'Uniformity', 'CleanCup', 'Sweetness', 'Overall', 'Defects', 'Cup Points', 'Moisture', 'C1Defects', 'Quakers', 'C2Defects']
+    coffeeCharacteristics = ['Aroma', 'Flavor', 'Aftertaste', 'Acidity', 'Body', 'Balance', 'Uniformity', 'CleanCup', 'Sweetness', 'Overall', 'Defects', 'CupPoints', 'Moisture', 'C1Defects', 'Quakers', 'C2Defects']
 
 
     print("############################## COFFEE INFO BY VARIETY ##############################")
@@ -186,7 +195,54 @@ def EDA(coffee: pd.DataFrame):
         distHist(coffee[[varName, "PrimaryColor"]], varName)
 
 
+def datasetPreprocessing(coffee: pd.DataFrame) -> pd.DataFrame:
 
+    scaler = StandardScaler()
+
+    #Scaling the variables which aren't in the correct order of magnitude compared to the others
+    #coffee["CupPoints"] = scaler.fit_transform(coffee["CupPoints"])
+    coffee["ApproxAltitude"] = scaler.fit_transform(coffee[["ApproxAltitude"]])
+
+    print("\nScaled data sample:")
+    print(coffee.head(10))
+
+    return coffee
+
+
+def PrincipalComponents(coffee: pd.DataFrame):
+
+    rows, columns = coffee.shape
+
+    nComponents = min(rows, columns) #Choosing the number of dimensions based on the lowest number between the rows and columns one
+
+    pca = PCA(n_components=nComponents)
+    pca.fit(coffee) #Here get calculated all the PCA math: loading scores, the variation each principal component accounts for, etc.
+    pca.transform(coffee) #Generation of the coordinates for the PCA plot
+
+    #Generating the PCA scree-plot
+    explainedVariancePercentage = np.round(pca.explained_variance_ratio_ * 100, decimals = 1).astype(np.float64) #The .astype(np.float64) is needed because calculation libraries require high precision represented values such as 64bits ones
+    #In this case explainedVariancePercentage was going to be of data type "half" which is a 16bits representation, so not precise enough for Python, and thus here it comes the need to solve this problem
+    labels = ["PC" + str(x) for x in range(1, len(explainedVariancePercentage)+1)]
+
+    PCAExplainedVarianceResults = zip(explainedVariancePercentage, labels)
+
+    print("\n")
+    print("Principal Components and Explained Variance: \n")
+    print(PCAExplainedVarianceResults)
+
+    print(pca.get_feature_names_out())
+
+    plt.figure(figsize=(16,9))
+    plt.bar(x=range(1, len(explainedVariancePercentage)+1), height=explainedVariancePercentage, labels=labels)
+    plt.xlabel("Principal Components")
+    plt.ylabel("Percentage of Explained Variance")
+    plt.title("PCA Scree Plot")
+
+    plt.savefig(f"{AnalysisPlotsPath}PCAScreePlot.png", dpi=300)
+
+
+
+    return
 
 
 
