@@ -20,7 +20,9 @@ magmaColorScale = sns.color_palette("magma")
 crestColorScale = sns.color_palette("crest")
 flareColorScale = sns.color_palette("flare")
 
-shapiroWilkPlotsPath = f"./CoffeeQualityAnalysis/ShapiroWilkTests"
+os.makedirs("ShapiroWilkTests", exist_ok=True)
+
+shapiroWilkPlotsPath = f"./{os.curdir}/ShapiroWilkTests/"
 
 
 def savePlots(plotFunction):
@@ -44,9 +46,9 @@ def savePlots(plotFunction):
         else:
             try:
                 plt.savefig(f"{filePath}{plotName}.png", dpi=300)
-                print(f"{plotName} Exported Correctly")
+                print(f"{plotName}.png Exported Correctly")
             except:
-                print("\033[91mExporting the plots wasn't possible, the returned type is not included in the decorator function\033[0m")
+                print("\033[91mExporting the plots wasn't possible, the returned type is not included between the ones treatable from the decorator function\033[0m")
 
         return None
 
@@ -75,6 +77,8 @@ def savePlots(plotFunction):
 
 def EDA(coffee: pd.DataFrame):
 
+    numericVariablesName = coffee.select_dtypes(include=np.number).columns.tolist()
+    numericVariablesName.remove("ID")
 
     print("-------------------- Dataset Info --------------------")
     print("*** COLUMNS ***")
@@ -125,11 +129,13 @@ def EDA(coffee: pd.DataFrame):
         print(coffeeInfo, "\n")
 
 
+    print("Numerical Variables: ", numericVariablesName)
+
     print("\n*** CORRELATION BETWEEN NUMERICAL VARIABLES ***")
     print(coffee.corr(numeric_only=True), "\n") #Checking correlations between the variables
 
     @savePlots
-    def ShapiroWilkTest(self, targetFeatureName, data):
+    def ShapiroWilkTest(targetFeatureName, data):
         plotName = targetFeatureName + inspect.currentframe().f_code.co_name
 
         print(f"Shapiro-Wilk Normality Test On \033[92m{targetFeatureName}\033[0m Target Feature")
@@ -141,11 +147,11 @@ def EDA(coffee: pd.DataFrame):
         SWQQPlot = stats.probplot(data, plot=ax)
         ax.set_title(f"Probability Plot for {targetFeatureName}")
 
+
         return plotName, SWQQPlot, shapiroWilkPlotsPath
 
-
-    ShapiroWilkTest() #TODO EXECUTE WITH ONE FEATURE AT A TIME WITH A FOR LOOP
-
+    for numVarName in numericVariablesName:
+        ShapiroWilkTest(numVarName, coffee[numVarName])
 
 
 
