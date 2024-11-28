@@ -174,9 +174,8 @@ def EDA(coffee: pd.DataFrame):
 
         plotName = targetVariable + "Distribution"
 
-        distributionHistogram = sns.displot(data=data, x=targetVariable, kde=True)
-
-        #TODO PRETTIFY PLOT - PLOT TITLE, LEGEND TITLE, ETC.
+        distributionHistogram = sns.displot(data=data, x=targetVariable, kde=True).set(title = f"{targetVariable} Distribution")
+        distributionHistogram.tight_layout()
 
         return plotName, distributionHistogram, EDAPlotsPath
 
