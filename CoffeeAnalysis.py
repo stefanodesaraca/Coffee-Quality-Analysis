@@ -170,11 +170,11 @@ def EDA(coffee: pd.DataFrame):
     print(coffee[["ID", "ApproxAltitude", "Aroma", "Sweetness", "Balance", "PrimaryColor", "Variety", "Origin", "Mill"]].sort_values(by="ApproxAltitude", ascending=False).head(10), "\n")
 
     @savePlots
-    def distHist(data, targetVariable: str, hue: str):
+    def distHist(data, targetVariable: str):
 
-        plotName = targetVariable + "Histogram"
+        plotName = targetVariable + "Distribution"
 
-        distributionHistogram = sns.displot(data=data, x=targetVariable, hue=hue, multiple="dodge", discrete=True)
+        distributionHistogram = sns.displot(data=data, x=targetVariable, kde=True)
 
         #TODO PRETTIFY PLOT - PLOT TITLE, LEGEND TITLE, ETC.
 
@@ -184,7 +184,7 @@ def EDA(coffee: pd.DataFrame):
     coffeeNumericalCharacteristics = ['Aroma', 'Flavor', 'Aftertaste', 'Acidity', 'Body', 'Balance', 'Uniformity', 'Sweetness', 'Overall']
 
     for varName in coffeeNumericalCharacteristics:
-        distHist(coffee[[varName, "PrimaryColor"]], varName, "PrimaryColor")
+        distHist(coffee[[varName, "PrimaryColor"]], varName)
 
 
 
