@@ -194,6 +194,8 @@ def EDA(coffee: pd.DataFrame):
     for varName in coffeeNumericalCharacteristics:
         distHist(coffee[[varName, "PrimaryColor"]], varName)
 
+    return None
+
 
 def datasetPreprocessing(coffee: pd.DataFrame) -> pd.DataFrame:
 
@@ -211,9 +213,15 @@ def datasetPreprocessing(coffee: pd.DataFrame) -> pd.DataFrame:
 
 def PrincipalComponents(coffee: pd.DataFrame):
 
+    coffee = coffee[[coffee.select_dtypes(include=np.number).columns.tolist()]] #Keeping only numerical columns to execute PCA
+    #TODO IMPROVE EFFICIENCY DECLARING THE NEW SCALED AND NUMERICAL COLUMNS ONLY DATAFRAME
+
     rows, columns = coffee.shape
+    print(coffee.shape)
 
     nComponents = min(rows, columns) #Choosing the number of dimensions based on the lowest number between the rows and columns one
+
+    print("I'm here 1")
 
     pca = PCA(n_components=nComponents)
     pca.fit(coffee) #Here get calculated all the PCA math: loading scores, the variation each principal component accounts for, etc.
@@ -225,6 +233,8 @@ def PrincipalComponents(coffee: pd.DataFrame):
     labels = ["PC" + str(x) for x in range(1, len(explainedVariancePercentage)+1)]
 
     PCAExplainedVarianceResults = zip(explainedVariancePercentage, labels)
+
+    print("I'm here 2")
 
     print("\n")
     print("Principal Components and Explained Variance: \n")
