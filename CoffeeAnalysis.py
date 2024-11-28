@@ -21,8 +21,10 @@ crestColorScale = sns.color_palette("crest")
 flareColorScale = sns.color_palette("flare")
 
 os.makedirs("ShapiroWilkTests", exist_ok=True)
+os.makedirs("EDAPlots", exist_ok=True)
 
 shapiroWilkPlotsPath = f"./{os.curdir}/ShapiroWilkTests/"
+EDAPlotsPath = f"./{os.curdir}/EDAPlots/"
 
 
 def savePlots(plotFunction):
@@ -153,10 +155,36 @@ def EDA(coffee: pd.DataFrame):
     for numVarName in numericVariablesName:
         ShapiroWilkTest(numVarName, coffee[numVarName])
 
+    print("\n\n")
+
+    print("*** TOP 10 COFFEES BY AROMA ***")
+    print(coffee[["ID", "ApproxAltitude", "Aroma", "Sweetness", "Balance", "PrimaryColor", "Variety", "Origin", "Mill"]].sort_values(by="Aroma", ascending=False).head(10), "\n")
+
+    print("*** TOP 10 COFFEES BY Sweetness ***")
+    print(coffee[["ID", "ApproxAltitude", "Aroma", "Sweetness", "Balance", "PrimaryColor", "Variety", "Origin", "Mill"]].sort_values(by="Sweetness", ascending=False).head(10), "\n")
+
+    print("*** TOP 10 COFFEES BY BALANCE ***")
+    print(coffee[["ID", "ApproxAltitude", "Aroma", "Sweetness", "Balance", "PrimaryColor", "Variety", "Origin", "Mill"]].sort_values(by="Balance", ascending=False).head(10), "\n")
+
+    print("*** TOP 10 COFFEES BY APPROXIMATE ALTITUDE ***")
+    print(coffee[["ID", "ApproxAltitude", "Aroma", "Sweetness", "Balance", "PrimaryColor", "Variety", "Origin", "Mill"]].sort_values(by="ApproxAltitude", ascending=False).head(10), "\n")
+
+    @savePlots
+    def distHist(data, targetVariable: str, hue: str):
+
+        plotName = targetVariable + "Histogram"
+
+        distributionHistogram = sns.displot(data=data, x=targetVariable, hue=hue, multiple="dodge", discrete=True)
+
+        #TODO PRETTIFY PLOT - PLOT TITLE, LEGEND TITLE, ETC.
+
+        return plotName, distributionHistogram, EDAPlotsPath
 
 
+    coffeeNumericalCharacteristics = ['Aroma', 'Flavor', 'Aftertaste', 'Acidity', 'Body', 'Balance', 'Uniformity', 'Sweetness', 'Overall']
 
-
+    for varName in coffeeNumericalCharacteristics:
+        distHist(coffee[[varName, "PrimaryColor"]], varName, "PrimaryColor")
 
 
 

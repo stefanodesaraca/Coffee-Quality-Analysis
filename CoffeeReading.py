@@ -35,6 +35,9 @@ def convertAltitude(alt: str):
         minAlt = int(minAlt)
         maxAlt = int(maxAlt)
 
+        print(minAlt)
+        print(maxAlt)
+
         approxAlt = np.mean([minAlt, maxAlt])
 
         return int(approxAlt)
