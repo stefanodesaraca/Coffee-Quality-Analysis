@@ -232,7 +232,7 @@ def SKLPrincipalComponents(data: pd.DataFrame):
 
     coffee = getNumericalColumnsDataset(data)
 
-    rows, columns = data.shape
+    rows, columns = coffee.shape
     #print("\nDataFrame Shape: ", data.shape)
 
     nComponents = min(rows, columns)  # Choosing the number of dimensions based on the lowest number between the rows and columns one
@@ -275,7 +275,7 @@ def MLXTPrincipalComponents(data: pd.DataFrame):
 
     coffee = getNumericalColumnsDataset(data)
 
-    rows, columns = data.shape
+    rows, columns = coffee.shape
     #print("\nDataFrame Shape: ", data.shape)
 
     nComponents = min(rows, columns)  # Choosing the number of dimensions based on the lowest number between the rows and columns one
@@ -349,7 +349,7 @@ def getKMeansClustersNumber(data: pd.DataFrame, maxK: int):
 
     #Automatic elbow plot generation using yellowbrick
     km = KMeans(random_state=100)
-    visualizer = KElbowVisualizer(km, k=(2, 10))
+    visualizer = KElbowVisualizer(km, k=(2, maxK))
     visualizer.fit(data)
 
     kValues = visualizer.k_values_
@@ -367,7 +367,7 @@ def KMeansClustering(coffee: pd.DataFrame):
 
     coffee = getNumericalColumnsDataset(coffee)
 
-    getKMeansClustersNumber(coffee, 20)
+    getKMeansClustersNumber(coffee, 10)
 
 
 
