@@ -325,8 +325,6 @@ def MLXTPrincipalComponents(data: pd.DataFrame):
 
 def getKMeansClustersNumber(data: pd.DataFrame, maxK: int):
 
-    data = getNumericalColumnsDataset(data)
-
     means = []
     inertias = []
 
@@ -366,6 +364,9 @@ def getKMeansClustersNumber(data: pd.DataFrame, maxK: int):
 
 
 def KMeansClustering(coffee: pd.DataFrame):
+
+    coffee = getNumericalColumnsDataset(coffee)
+
     getKMeansClustersNumber(coffee, 20)
 
 
