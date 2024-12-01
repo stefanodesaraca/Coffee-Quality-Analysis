@@ -253,12 +253,12 @@ def SKLPrincipalComponents(data: pd.DataFrame):
     #print(pca.get_feature_names_out())
 
     plt.figure(figsize=(16, 9))
-    bars = plt.bar(x=range(1, len(explainedVariancePercentage)+1), height=explainedVariancePercentage, tick_label=labels)
+    bars = plt.bar(x=range(1, len(explainedVariancePercentage)+1), height=explainedVariancePercentage, tick_label=labels, alpha=0.5)
     plt.bar_label(bars, [f"{val:.2f}%" for val in explainedVariancePercentage], padding=3)
     plt.xlabel("Principal Components")
     plt.ylabel("Explained Variance (%)")
-    plt.title("PCA Scree Plot")
-    plt.grid(axis="y", linestyle="-")
+    plt.title("Scikit-Learn Auto Solver PCA Scree Plot")
+    plt.grid(axis="y", linestyle="--", linewidth=1.5)
 
     plt.savefig(f"{AnalysisPlotsPath}PCAScreePlot_SKL.png", dpi=300)
 
@@ -284,26 +284,27 @@ def MLXTPrincipalComponents(data: pd.DataFrame):
 
     MLXTPCAExplainedVarianceResults = zip(explainedVariance, labels)
 
-    print("\n*** MLXTend SVD-Solver PCA ***")
+    print("\n*** MLXTend SVD Solver PCA ***")
 
     print("Principal Components and Explained Variance: ")
     print(list(MLXTPCAExplainedVarianceResults))
     print("\n")
 
-    print("Loading Scores: ")
-    print(pca.loadings_)
+    #print("Loading Scores: ")
+    #print(pca.loadings_)
 
 
     #Generating the PCA scree-plot
 
     plt.figure(figsize=(16, 9))
-    bars = plt.bar(x=range(1, len(explainedVariance)+1), height=explainedVariance, tick_label=labels, label='Explained variance')
+    bars = plt.bar(x=range(1, len(explainedVariance)+1), height=explainedVariance, tick_label=labels, alpha=0.5, label='Explained variance')
     plt.bar_label(bars, [f"{val:.2f}%" for val in explainedVariance], padding=3)
-    plt.step(range(4), explainedVarCumSum, where='mid', label='Cumulative Explained variance')
+    plt.step(range(1, len(explainedVariance)+1), explainedVarCumSum, where='mid', label='Cumulative Explained variance')
     plt.xlabel("Principal Components")
     plt.ylabel("Explained Variance (%)")
-    plt.title("PCA Scree Plot")
+    plt.title("MLXTend SVD Solver PCA Scree Plot")
     plt.legend(loc='best')
+    plt.grid(axis="y", linestyle="--", linewidth=1.5)
 
 
     plt.savefig(f"{AnalysisPlotsPath}PCAScreePlot_MLXT.png", dpi=300)
