@@ -7,7 +7,6 @@ import numpy as np
 from tqdm import tqdm
 import matplotlib.pyplot as plt
 import seaborn as sns
-import statistics
 import plotly
 import plotly.express as px
 from functools import wraps
@@ -16,6 +15,12 @@ from warnings import simplefilter
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 from mlxtend.feature_extraction import PrincipalComponentAnalysis
+
+from sklearn.cluster import KMeans
+from yellowbrick.cluster import KElbowVisualizer
+
+from sklearn.cluster import DBSCAN
+
 
 
 simplefilter("ignore")
@@ -213,24 +218,24 @@ def datasetPreprocessing(coffee: pd.DataFrame) -> pd.DataFrame:
     return coffee
 
 
-def getNumericalColumnsDatasetAndNComponents(data: pd.DataFrame):
+def getNumericalColumnsDataset(data: pd.DataFrame):
 
     numericColumns = data.select_dtypes(include=np.number).columns.tolist()
     numericColumns.remove("ID")
 
     data = data[numericColumns]  # Overwriting the old dataframe with a new one keeping only numerical columns to then execute PCA. So this is coffee, but only with numerical columns
 
-    rows, columns = data.shape
-    #print("\nDataFrame Shape: ", data.shape)
-
-    nComponents = min(rows, columns)  # Choosing the number of dimensions based on the lowest number between the rows and columns one
-
-    return data, nComponents
+    return data
 
 
 def SKLPrincipalComponents(data: pd.DataFrame):
 
-    coffee, nComponents = getNumericalColumnsDatasetAndNComponents(data)
+    coffee = getNumericalColumnsDataset(data)
+
+    rows, columns = data.shape
+    #print("\nDataFrame Shape: ", data.shape)
+
+    nComponents = min(rows, columns)  # Choosing the number of dimensions based on the lowest number between the rows and columns one
 
     pca = PCA(n_components=nComponents)
     pca.fit(coffee) #Here get calculated all the PCA math: loading scores, the variation each principal component accounts for, etc.
@@ -268,7 +273,12 @@ def SKLPrincipalComponents(data: pd.DataFrame):
 
 def MLXTPrincipalComponents(data: pd.DataFrame):
 
-    coffee, nComponents = getNumericalColumnsDatasetAndNComponents(data)
+    coffee = getNumericalColumnsDataset(data)
+
+    rows, columns = data.shape
+    #print("\nDataFrame Shape: ", data.shape)
+
+    nComponents = min(rows, columns)  # Choosing the number of dimensions based on the lowest number between the rows and columns one
 
     pca = PrincipalComponentAnalysis(n_components=nComponents, solver="svd")
     pca.fit(coffee) #Here get calculated all the PCA math: loading scores, the variation each principal component accounts for, etc.
@@ -311,6 +321,98 @@ def MLXTPrincipalComponents(data: pd.DataFrame):
 
 
     return None
+
+
+def getKMeansClustersNumber(data: pd.DataFrame, maxK: int):
+
+    data = getNumericalColumnsDataset(data)
+
+    means = []
+    inertias = []
+
+    for k in range(1, maxK):
+        kmeans = KMeans(n_clusters=k, random_state=100)
+        kmeans.fit(data)
+
+        means.append(k)
+        inertias.append(kmeans.inertia_)
+
+
+    #Manual elbow plot generation
+    plt.figure(figsize=(16, 9))
+    plt.plot(means, inertias, "o-")
+    plt.xlabel("Number of Clusters (K)")
+    plt.ylabel("Inertia")
+    plt.grid(which='minor', color='#EEEEEE', linestyle=':', linewidth=0.5)
+    plt.minorticks_on()
+
+    plt.savefig(f"{AnalysisPlotsPath}KMeansManualElbowPlot.png", dpi=300)
+
+
+    #Automatic elbow plot generation using yellowbrick
+    km = KMeans(random_state=100)
+    visualizer = KElbowVisualizer(km, k=(2, 10))
+    visualizer.fit(data)
+
+    kValues = visualizer.k_values_
+
+    print("Elbow Values: ", visualizer.elbow_score_)
+    print("K Values: ", visualizer.k_values_)
+    print("Distance Metric: ", visualizer.distance_metric)
+
+    visualizer.show(outpath=f"{AnalysisPlotsPath}KMeansAutomaticElbowPlot.png")
+
+    return
+
+
+def KMeansClustering(coffee: pd.DataFrame):
+    getKMeansClustersNumber(coffee, 20)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

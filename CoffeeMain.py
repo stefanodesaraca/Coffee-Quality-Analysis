@@ -1,6 +1,6 @@
 
 from CoffeeReading import readDataset, cleanData
-from CoffeeAnalysis import EDA, datasetPreprocessing, SKLPrincipalComponents, MLXTPrincipalComponents
+from CoffeeAnalysis import EDA, datasetPreprocessing, SKLPrincipalComponents, MLXTPrincipalComponents, KMeansClustering
 
 #coffeeData = readDataset("coffee.csv")
 
@@ -12,7 +12,7 @@ coffeeScaled = datasetPreprocessing(coffeeData)
 SKLPrincipalComponents(coffeeScaled)
 MLXTPrincipalComponents(coffeeScaled)
 
-
+KMeansClustering(coffeeScaled)
 
 
 
