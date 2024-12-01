@@ -15,6 +15,8 @@ from warnings import simplefilter
 
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
+from mlxtend.feature_extraction import PrincipalComponentAnalysis
+
 
 simplefilter("ignore")
 
