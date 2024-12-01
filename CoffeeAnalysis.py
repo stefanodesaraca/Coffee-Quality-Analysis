@@ -215,40 +215,42 @@ def datasetPreprocessing(coffee: pd.DataFrame) -> pd.DataFrame:
 
 def PrincipalComponents(coffee: pd.DataFrame):
 
-    coffee = coffee[[coffee.select_dtypes(include=np.number).columns.tolist()]] #Keeping only numerical columns to execute PCA
-    #TODO IMPROVE EFFICIENCY DECLARING THE NEW SCALED AND NUMERICAL COLUMNS ONLY DATAFRAME
+    numericColumns = coffee.select_dtypes(include=np.number).columns.tolist()
+    numericColumns.remove("ID")
+
+    coffee = coffee[numericColumns] #Overwriting the old dataframe with a new one keeping only numerical columns to then execute PCA. So this is coffee, but only with numerical columns
 
     rows, columns = coffee.shape
-    print(coffee.shape)
+    print("\nDataFrame Shape: ", coffee.shape)
 
     nComponents = min(rows, columns) #Choosing the number of dimensions based on the lowest number between the rows and columns one
-
-    print("I'm here 1")
 
     pca = PCA(n_components=nComponents)
     pca.fit(coffee) #Here get calculated all the PCA math: loading scores, the variation each principal component accounts for, etc.
     pca.transform(coffee) #Generation of the coordinates for the PCA plot
 
     #Generating the PCA scree-plot
-    explainedVariancePercentage = np.round(pca.explained_variance_ratio_ * 100, decimals = 1).astype(np.float64) #The .astype(np.float64) is needed because calculation libraries require high precision represented values such as 64bits ones
+    explainedVariancePercentage = np.round(pca.explained_variance_ratio_ * 100, decimals=1).astype(np.float64) #The .astype(np.float64) is needed because calculation libraries require high precision represented values such as 64bits ones
     #In this case explainedVariancePercentage was going to be of data type "half" which is a 16bits representation, so not precise enough for Python, and thus here it comes the need to solve this problem
     labels = ["PC" + str(x) for x in range(1, len(explainedVariancePercentage)+1)]
 
     PCAExplainedVarianceResults = zip(explainedVariancePercentage, labels)
 
-    print("I'm here 2")
-
     print("\n")
-    print("Principal Components and Explained Variance: \n")
-    print(PCAExplainedVarianceResults)
+    print("Principal Components and Explained Variance: ")
+    print(list(PCAExplainedVarianceResults))
+    print("\n")
 
-    print(pca.get_feature_names_out())
 
-    plt.figure(figsize=(16,9))
-    plt.bar(x=range(1, len(explainedVariancePercentage)+1), height=explainedVariancePercentage, labels=labels)
+    #print(pca.get_feature_names_out())
+
+    plt.figure(figsize=(16, 9))
+    bars = plt.bar(x=range(1, len(explainedVariancePercentage)+1), height=explainedVariancePercentage, tick_label=labels)
+    plt.bar_label(bars, [f"{val:.2f}%" for val in explainedVariancePercentage], padding=3)
     plt.xlabel("Principal Components")
-    plt.ylabel("Percentage of Explained Variance")
+    plt.ylabel("Explained Variance (%)")
     plt.title("PCA Scree Plot")
+
 
     plt.savefig(f"{AnalysisPlotsPath}PCAScreePlot.png", dpi=300)
 
