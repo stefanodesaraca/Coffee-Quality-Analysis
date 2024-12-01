@@ -335,7 +335,7 @@ def getKMeansClustersNumber(data: pd.DataFrame, maxK: int):
         means.append(k)
         inertias.append(kmeans.inertia_)
 
-
+    #TODO PRETTIFY THIS PLOT: TITLE, ETC.
     #Manual elbow plot generation
     plt.figure(figsize=(16, 9))
     plt.plot(means, inertias, "o-")
