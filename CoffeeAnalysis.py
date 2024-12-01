@@ -213,32 +213,40 @@ def datasetPreprocessing(coffee: pd.DataFrame) -> pd.DataFrame:
     return coffee
 
 
-def PrincipalComponents(coffee: pd.DataFrame):
+def getNumericalColumnsDatasetAndNComponents(data: pd.DataFrame):
 
-    numericColumns = coffee.select_dtypes(include=np.number).columns.tolist()
+    numericColumns = data.select_dtypes(include=np.number).columns.tolist()
     numericColumns.remove("ID")
 
-    coffee = coffee[numericColumns] #Overwriting the old dataframe with a new one keeping only numerical columns to then execute PCA. So this is coffee, but only with numerical columns
+    data = data[numericColumns]  # Overwriting the old dataframe with a new one keeping only numerical columns to then execute PCA. So this is coffee, but only with numerical columns
 
-    rows, columns = coffee.shape
-    print("\nDataFrame Shape: ", coffee.shape)
+    rows, columns = data.shape
+    #print("\nDataFrame Shape: ", data.shape)
 
-    nComponents = min(rows, columns) #Choosing the number of dimensions based on the lowest number between the rows and columns one
+    nComponents = min(rows, columns)  # Choosing the number of dimensions based on the lowest number between the rows and columns one
+
+    return data, nComponents
+
+
+def SKLPrincipalComponents(data: pd.DataFrame):
+
+    coffee, nComponents = getNumericalColumnsDatasetAndNComponents(data)
 
     pca = PCA(n_components=nComponents)
     pca.fit(coffee) #Here get calculated all the PCA math: loading scores, the variation each principal component accounts for, etc.
     pca.transform(coffee) #Generation of the coordinates for the PCA plot
 
     #Generating the PCA scree-plot
-    explainedVariancePercentage = np.round(pca.explained_variance_ratio_ * 100, decimals=1).astype(np.float64) #The .astype(np.float64) is needed because calculation libraries require high precision represented values such as 64bits ones
+    explainedVariancePercentage = np.round(pca.explained_variance_ratio_ * 100, decimals=2).astype(np.float64) #The .astype(np.float64) is needed because calculation libraries require high precision represented values such as 64bits ones
     #In this case explainedVariancePercentage was going to be of data type "half" which is a 16bits representation, so not precise enough for Python, and thus here it comes the need to solve this problem
     labels = ["PC" + str(x) for x in range(1, len(explainedVariancePercentage)+1)]
 
-    PCAExplainedVarianceResults = zip(explainedVariancePercentage, labels)
+    SKLPCAExplainedVarianceResults = zip(explainedVariancePercentage, labels)
 
-    print("\n")
+    print("\n*** Scikit-Learn Auto Solver PCA ***")
+
     print("Principal Components and Explained Variance: ")
-    print(list(PCAExplainedVarianceResults))
+    print(list(SKLPCAExplainedVarianceResults))
     print("\n")
 
 
@@ -250,16 +258,58 @@ def PrincipalComponents(coffee: pd.DataFrame):
     plt.xlabel("Principal Components")
     plt.ylabel("Explained Variance (%)")
     plt.title("PCA Scree Plot")
+    plt.grid(axis="y", linestyle="-")
+
+    plt.savefig(f"{AnalysisPlotsPath}PCAScreePlot_SKL.png", dpi=300)
 
 
-    plt.savefig(f"{AnalysisPlotsPath}PCAScreePlot.png", dpi=300)
+    return None
 
 
+def MLXTPrincipalComponents(data: pd.DataFrame):
 
-    return
+    coffee, nComponents = getNumericalColumnsDatasetAndNComponents(data)
+
+    pca = PrincipalComponentAnalysis(n_components=nComponents, solver="svd")
+    pca.fit(coffee) #Here get calculated all the PCA math: loading scores, the variation each principal component accounts for, etc.
+    pca.transform(coffee)
+
+    explainedVariance = pca.e_vals_normalized_
+    explainedVariance = np.round(explainedVariance * 100, decimals=2).astype(np.float64)
+
+    explainedVarCumSum = np.cumsum(pca.e_vals_normalized_*100)
 
 
+    labels = ["PC" + str(x) for x in range(1, len(explainedVariance)+1)]
 
+    MLXTPCAExplainedVarianceResults = zip(explainedVariance, labels)
+
+    print("\n*** MLXTend SVD-Solver PCA ***")
+
+    print("Principal Components and Explained Variance: ")
+    print(list(MLXTPCAExplainedVarianceResults))
+    print("\n")
+
+    print("Loading Scores: ")
+    print(pca.loadings_)
+
+
+    #Generating the PCA scree-plot
+
+    plt.figure(figsize=(16, 9))
+    bars = plt.bar(x=range(1, len(explainedVariance)+1), height=explainedVariance, tick_label=labels, label='Explained variance')
+    plt.bar_label(bars, [f"{val:.2f}%" for val in explainedVariance], padding=3)
+    plt.step(range(4), explainedVarCumSum, where='mid', label='Cumulative Explained variance')
+    plt.xlabel("Principal Components")
+    plt.ylabel("Explained Variance (%)")
+    plt.title("PCA Scree Plot")
+    plt.legend(loc='best')
+
+
+    plt.savefig(f"{AnalysisPlotsPath}PCAScreePlot_MLXT.png", dpi=300)
+
+
+    return None
 
 
 

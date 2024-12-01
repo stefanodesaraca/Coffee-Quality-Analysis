@@ -1,6 +1,6 @@
 
 from CoffeeReading import readDataset, cleanData
-from CoffeeAnalysis import EDA, datasetPreprocessing, PrincipalComponents
+from CoffeeAnalysis import EDA, datasetPreprocessing, SKLPrincipalComponents, MLXTPrincipalComponents
 
 #coffeeData = readDataset("coffee.csv")
 
@@ -9,8 +9,8 @@ coffeeData = cleanData("coffee.csv")
 EDA(coffeeData)
 
 coffeeScaled = datasetPreprocessing(coffeeData)
-PrincipalComponents(coffeeScaled)
-
+SKLPrincipalComponents(coffeeScaled)
+MLXTPrincipalComponents(coffeeScaled)
 
 
 
