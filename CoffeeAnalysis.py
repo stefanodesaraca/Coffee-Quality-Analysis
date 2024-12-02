@@ -360,6 +360,8 @@ def getKMeansClustersNumber(data: pd.DataFrame, maxK: int):
 
     visualizer.show(outpath=f"{AnalysisPlotsPath}KMeansAutomaticElbowPlot.png")
 
+    #TODO ADD SILHOUETTE AND RETURN TRUE OPTIMAL NUMBER OF CLUSTERS
+
     return
 
 
