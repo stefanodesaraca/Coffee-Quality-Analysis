@@ -1,3 +1,5 @@
+import os
+
 import pandas as pd
 import numpy as np
 import json
@@ -8,7 +10,7 @@ from datetime import datetime
 pd.set_option("display.max_columns", None)
 #pd.set_option("display.max_rows", None)
 
-
+os.makedirs("./Data", exist_ok=True)
 
 
 
@@ -146,7 +148,11 @@ def cleanData(fileName: str) -> pd.DataFrame:
     return coffee
 
 
+def exportCleanData(data: pd.DataFrame) -> None:
 
+    data.to_csv(f"{os.curdir}/Data/CoffeCleaned.csv")
+
+    return None
 
 
 
