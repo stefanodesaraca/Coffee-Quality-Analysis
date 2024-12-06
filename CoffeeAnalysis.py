@@ -1,6 +1,8 @@
 import os
 import json
 import inspect
+
+from pandas.core.common import random_state
 from scipy import stats
 import pandas as pd
 import numpy as np
@@ -17,6 +19,7 @@ from sklearn.preprocessing import StandardScaler
 from mlxtend.feature_extraction import PrincipalComponentAnalysis
 
 from sklearn.cluster import KMeans
+from sklearn.metrics import silhouette_score
 from yellowbrick.cluster import KElbowVisualizer
 
 from sklearn.cluster import DBSCAN
@@ -332,14 +335,13 @@ def getKMeansClustersNumber(data: pd.DataFrame, maxK: int):
     means = []
     inertias = []
 
-    for k in range(1, maxK):
+    for k in range(1, maxK+1):
         kmeans = KMeans(n_clusters=k, random_state=100)
         kmeans.fit(data)
 
         means.append(k)
         inertias.append(kmeans.inertia_)
 
-    #TODO PRETTIFY THIS PLOT: TITLE, ETC.
     #Manual elbow plot generation
     plt.figure(figsize=(16, 9))
     plt.plot(means, inertias, "o-")
@@ -347,6 +349,7 @@ def getKMeansClustersNumber(data: pd.DataFrame, maxK: int):
     plt.ylabel("Inertia")
     plt.grid(which='minor', color='#EEEEEE', linestyle=':', linewidth=0.5)
     plt.minorticks_on()
+    plt.title("Manual K-Means Elbow Plot")
 
     plt.savefig(f"{AnalysisPlotsPath}KMeansManualElbowPlot.png", dpi=300)
 
@@ -356,7 +359,7 @@ def getKMeansClustersNumber(data: pd.DataFrame, maxK: int):
     visualizer = KElbowVisualizer(km, k=(2, maxK))
     visualizer.fit(data)
 
-    kValues = visualizer.k_values_
+    print("*** ELBOW METHOD ***")
 
     print("Elbow Values: ", visualizer.elbow_score_)
     print("K Values: ", visualizer.k_values_)
@@ -365,14 +368,42 @@ def getKMeansClustersNumber(data: pd.DataFrame, maxK: int):
 
     visualizer.show(outpath=f"{AnalysisPlotsPath}KMeansAutomaticElbowPlot.png")
 
-    return
+    print("\n")
+
+    #Silhouette method
+    print("*** SILHOUETTE METHOD ***")
+
+    for s in range(1, maxK+1):
+        sObj = KMeans(n_clusters=s, random_state=100)
+        sObj.fit(data)
+        labels = sObj.labels_
+        print(labels)
+
+        silhouetteScoreEuclidean = silhouette_score(data, labels, metric="euclidean", random_state=100)
+        silhouetteScoreManhattan = silhouette_score(data, labels, metric="manhattan", random_state=100)
+        silhouetteScoreMinkowski = silhouette_score(data, labels, metric="minkowski", random_state=100)
+        silhouetteScoreMahalanobis = silhouette_score(data, labels, metric="mahalanobis", random_state=100)
+
+        print(f"Silhouette score for {s} clusters (Euclidean Distance): ", silhouetteScoreEuclidean)
+        print(f"Silhouette score for {s} clusters (Manhattan Distance): ", silhouetteScoreManhattan)
+        print(f"Silhouette score for {s} clusters (Minkowski Distance): ", silhouetteScoreMinkowski)
+        print(f"Silhouette score for {s} clusters (Mahalanobis Distance): ", silhouetteScoreMahalanobis, "\n")
+
+
+
+
+    if visualizer.elbow_value_ is not None:
+        return visualizer.elbow_value_
+    else:
+        print("\033[92mNo Elbow Value Found")
+        return None
 
 
 def KMeansClustering(coffee: pd.DataFrame):
 
     coffee = getNumericalColumnsDataset(coffee)
 
-    getKMeansClustersNumber(coffee, 10)
+    k = getKMeansClustersNumber(coffee, 10)
 
 
 
