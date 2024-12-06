@@ -392,6 +392,7 @@ def getKMeansClustersNumber(data: pd.DataFrame, maxK: int):
 
 
 
+
     if visualizer.elbow_value_ is not None:
         return visualizer.elbow_value_
     else:
