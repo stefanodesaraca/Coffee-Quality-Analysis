@@ -93,6 +93,8 @@ def EDA(coffee: pd.DataFrame):
 
     numericVariablesName = coffee.select_dtypes(include=np.number).columns.tolist()
     numericVariablesName.remove("ID")
+    numericVariablesName.remove("NBags")
+    numericVariablesName.remove("BagWeight")
 
     print("-------------------- Short Dataset Overview --------------------")
 
@@ -147,7 +149,7 @@ def EDA(coffee: pd.DataFrame):
         print(coffeeInfo, "\n")
 
 
-    print("Numerical Variables: ", numericVariablesName)
+    print("Useful Numerical Variables: ", numericVariablesName)
 
     print("\n*** CORRELATION BETWEEN NUMERICAL VARIABLES ***")
     print(coffee.corr(numeric_only=True), "\n") #Checking correlations between the variables
@@ -222,6 +224,8 @@ def getNumericalColumnsDataset(data: pd.DataFrame):
 
     numericColumns = data.select_dtypes(include=np.number).columns.tolist()
     numericColumns.remove("ID")
+    numericColumns.remove("NBags")
+    numericColumns.remove("BagWeight")
 
     data = data[numericColumns]  # Overwriting the old dataframe with a new one keeping only numerical columns to then execute PCA. So this is coffee, but only with numerical columns
 
@@ -357,6 +361,7 @@ def getKMeansClustersNumber(data: pd.DataFrame, maxK: int):
     print("Elbow Values: ", visualizer.elbow_score_)
     print("K Values: ", visualizer.k_values_)
     print("Distance Metric: ", visualizer.distance_metric)
+    print("Best K: ", visualizer.elbow_value_)
 
     visualizer.show(outpath=f"{AnalysisPlotsPath}KMeansAutomaticElbowPlot.png")
 
