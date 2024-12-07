@@ -335,7 +335,7 @@ def getKMeansClustersNumber(data: pd.DataFrame, maxK: int):
     means = []
     inertias = []
 
-    for k in range(1, maxK+1):
+    for k in range(2, maxK+1):
         kmeans = KMeans(n_clusters=k, random_state=100)
         kmeans.fit(data)
 
@@ -373,23 +373,22 @@ def getKMeansClustersNumber(data: pd.DataFrame, maxK: int):
     #Silhouette method
     print("*** SILHOUETTE METHOD ***")
 
-    for s in range(1, maxK+1):
+    for s in range(2, maxK+1):
         sObj = KMeans(n_clusters=s, random_state=100)
         sObj.fit(data)
         labels = sObj.labels_
-        print(labels)
+        print(f"Silhouette Scores for {s} Clusters With 3 Different Distances Metrics")
+        #print(labels)
 
         silhouetteScoreEuclidean = silhouette_score(data, labels, metric="euclidean", random_state=100)
         silhouetteScoreManhattan = silhouette_score(data, labels, metric="manhattan", random_state=100)
         silhouetteScoreMinkowski = silhouette_score(data, labels, metric="minkowski", random_state=100)
-        silhouetteScoreMahalanobis = silhouette_score(data, labels, metric="mahalanobis", random_state=100)
 
         print(f"Silhouette score for {s} clusters (Euclidean Distance): ", silhouetteScoreEuclidean)
         print(f"Silhouette score for {s} clusters (Manhattan Distance): ", silhouetteScoreManhattan)
         print(f"Silhouette score for {s} clusters (Minkowski Distance): ", silhouetteScoreMinkowski)
-        print(f"Silhouette score for {s} clusters (Mahalanobis Distance): ", silhouetteScoreMahalanobis, "\n")
 
-
+        #TODO SEABORN PAIRPLOT AND PAIRGRID PLOTS WITH DENSITY ON A SIDE, SMOOTH HISTOGRAMS AND SCATTERPLOTS ON TOP OF THE DIAGONAL
 
 
 
