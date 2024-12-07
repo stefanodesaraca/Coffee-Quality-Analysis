@@ -373,22 +373,52 @@ def getKMeansClustersNumber(data: pd.DataFrame, maxK: int):
     #Silhouette method
     print("*** SILHOUETTE METHOD ***")
 
+    silhouetteScores = {}
+
     for s in range(2, maxK+1):
         sObj = KMeans(n_clusters=s, random_state=100)
         sObj.fit(data)
         labels = sObj.labels_
-        print(f"Silhouette Scores for {s} Clusters With 3 Different Distances Metrics")
         #print(labels)
 
         silhouetteScoreEuclidean = silhouette_score(data, labels, metric="euclidean", random_state=100)
         silhouetteScoreManhattan = silhouette_score(data, labels, metric="manhattan", random_state=100)
         silhouetteScoreMinkowski = silhouette_score(data, labels, metric="minkowski", random_state=100)
 
-        print(f"Silhouette score for {s} clusters (Euclidean Distance): ", silhouetteScoreEuclidean)
-        print(f"Silhouette score for {s} clusters (Manhattan Distance): ", silhouetteScoreManhattan)
-        print(f"Silhouette score for {s} clusters (Minkowski Distance): ", silhouetteScoreMinkowski)
+        #print(f"Silhouette score for {s} clusters (Euclidean Distance): ", silhouetteScoreEuclidean)
+        #print(f"Silhouette score for {s} clusters (Manhattan Distance): ", silhouetteScoreManhattan)
+        #print(f"Silhouette score for {s} clusters (Minkowski Distance): ", silhouetteScoreMinkowski)
 
-        #TODO SEABORN PAIRPLOT AND PAIRGRID PLOTS WITH DENSITY ON A SIDE, SMOOTH HISTOGRAMS AND SCATTERPLOTS ON TOP OF THE DIAGONAL
+
+        silhouetteScores[s] = {"Euclidean": silhouetteScoreEuclidean,
+                               "Manhattan": silhouetteScoreManhattan,
+                               "Minkowski": silhouetteScoreMinkowski}
+
+        bestKMetricsAndScores = {}
+
+
+        for scoreDict in silhouetteScores.values():
+            bestMetric = None
+
+            bestScore = max(list(scoreDict.values()))
+
+            for key, value in scoreDict.items():
+                if scoreDict[key] == bestScore:
+                    bestMetric = key
+
+            bestKMetricsAndScores.update({s: {}})
+            bestKMetricsAndScores[s].update({bestMetric: bestScore}) #Creating a dictionary which contains the best metric and corresponding score for K clusters
+
+
+        print(bestKMetricsAndScores)
+
+
+    #print(silhouetteScores)
+    #TODO data["ClustersLabels"] = <- USE BEST SILHOUETTE SCORE TO DEFINE WHICH K LABELS TO USE FOR THE PLOTS
+
+
+
+    #TODO SEABORN PAIRPLOT AND PAIRGRID PLOTS WITH DENSITY ON A SIDE, SMOOTH HISTOGRAMS AND SCATTERPLOTS ON TOP OF THE DIAGONAL
 
 
 
