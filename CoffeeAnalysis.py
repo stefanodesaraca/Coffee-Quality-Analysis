@@ -364,7 +364,7 @@ def getKMeansClustersNumber(data: pd.DataFrame, maxK: int):
     print("Elbow Values: ", visualizer.elbow_score_)
     print("K Values: ", visualizer.k_values_)
     print("Distance Metric: ", visualizer.distance_metric)
-    print("Best K: ", visualizer.elbow_value_)
+    print("Best K From Elbow Method: ", visualizer.elbow_value_)
 
     visualizer.show(outpath=f"{AnalysisPlotsPath}KMeansAutomaticElbowPlot.png")
 
@@ -374,6 +374,7 @@ def getKMeansClustersNumber(data: pd.DataFrame, maxK: int):
     print("*** SILHOUETTE METHOD ***")
 
     silhouetteScores = {}
+    bestKMetricsAndScores = {}
 
     for s in range(2, maxK+1):
         sObj = KMeans(n_clusters=s, random_state=100)
@@ -394,9 +395,6 @@ def getKMeansClustersNumber(data: pd.DataFrame, maxK: int):
                                "Manhattan": silhouetteScoreManhattan,
                                "Minkowski": silhouetteScoreMinkowski}
 
-        bestKMetricsAndScores = {}
-
-
         for scoreDict in silhouetteScores.values():
             bestMetric = None
 
@@ -410,11 +408,30 @@ def getKMeansClustersNumber(data: pd.DataFrame, maxK: int):
             bestKMetricsAndScores[s].update({bestMetric: bestScore}) #Creating a dictionary which contains the best metric and corresponding score for K clusters
 
 
-        print(bestKMetricsAndScores)
+    print("Best Metric and Score For Each K Number of Clusters:")
+    print(bestKMetricsAndScores)
+
+    print("\nAll Silhouette Scores For Three Different Metrics For Each K Number of Clusters: ")
+    print(silhouetteScores)
+
+    bestKSilhouette = 0 #The best K
+    bestKSilhouetteScore = 0 #The silhouette score of the best K
+
+    for kVal in bestKMetricsAndScores.keys():
+        val = bestKMetricsAndScores[kVal]
+        #print(val.values())
+        val = list(val.values())[0]
+        bestKSilhouetteScore = max(bestKSilhouetteScore, val)
+        if val > bestKSilhouetteScore: bestKSilhouette = kVal
+
+    print(f"Best K: {bestKSilhouette} | Silhouette Score: {bestKSilhouetteScore}")
 
 
-    #print(silhouetteScores)
-    #TODO data["ClustersLabels"] = <- USE BEST SILHOUETTE SCORE TO DEFINE WHICH K LABELS TO USE FOR THE PLOTS
+
+
+    bestKSilhouette
+
+    #data["ClustersLabels"] = ...
 
 
 
