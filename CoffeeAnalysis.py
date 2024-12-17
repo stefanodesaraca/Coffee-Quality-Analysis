@@ -255,21 +255,23 @@ def SKLPrincipalComponents(data: pd.DataFrame):
 
     SKLPCAExplainedVarianceResults = zip(explainedVariancePercentage, labels)
 
-    print("\n*** Scikit-Learn Auto Solver PCA ***")
+    print("\n\n*** Scikit-Learn Auto Solver PCA ***")
 
     print("Principal Components and Explained Variance: ")
     print(list(SKLPCAExplainedVarianceResults))
-    print("\n")
-
 
     #print(pca.get_feature_names_out())
+
+    explainedVarCumSum = np.cumsum(explainedVariancePercentage)
 
     plt.figure(figsize=(16, 9))
     bars = plt.bar(x=range(1, len(explainedVariancePercentage)+1), height=explainedVariancePercentage, tick_label=labels, alpha=0.5)
     plt.bar_label(bars, [f"{val:.2f}%" for val in explainedVariancePercentage], padding=3)
+    plt.step(range(1, len(explainedVariancePercentage)+1), explainedVarCumSum, where='mid', label='Cumulative Explained Variance')
     plt.xlabel("Principal Components")
     plt.ylabel("Explained Variance (%)")
     plt.title("Scikit-Learn Auto Solver PCA Scree Plot")
+    plt.legend(loc='best')
     plt.grid(axis="y", linestyle="--", linewidth=1.5)
 
     plt.savefig(f"{AnalysisPlotsPath}PCAScreePlot_SKL.png", dpi=300)
@@ -314,9 +316,9 @@ def MLXTPrincipalComponents(data: pd.DataFrame):
     #Generating the PCA scree-plot
 
     plt.figure(figsize=(16, 9))
-    bars = plt.bar(x=range(1, len(explainedVariance)+1), height=explainedVariance, tick_label=labels, alpha=0.5, label='Explained variance')
+    bars = plt.bar(x=range(1, len(explainedVariance)+1), height=explainedVariance, tick_label=labels, alpha=0.5, label='Explained Variance')
     plt.bar_label(bars, [f"{val:.2f}%" for val in explainedVariance], padding=3)
-    plt.step(range(1, len(explainedVariance)+1), explainedVarCumSum, where='mid', label='Cumulative Explained variance')
+    plt.step(range(1, len(explainedVariance)+1), explainedVarCumSum, where='mid', label='Cumulative Explained Variance')
     plt.xlabel("Principal Components")
     plt.ylabel("Explained Variance (%)")
     plt.title("MLXTend SVD Solver PCA Scree Plot")
@@ -408,10 +410,10 @@ def getKMeansClustersNumber(data: pd.DataFrame, maxK: int):
             bestKMetricsAndScores[s].update({bestMetric: bestScore}) #Creating a dictionary which contains the best metric and corresponding score for K clusters
 
 
-    print("\nAll Silhouette Scores For Three Different Metrics For Each K Number of Clusters: ")
+    print("All Silhouette Scores For Three Different Metrics For Each K Number of Clusters: ")
     print(silhouetteScores)
 
-    print("Best Metric and Score For Each K Number of Clusters:")
+    print("\nBest Metric and Score For Each K Number of Clusters:")
     print(bestKMetricsAndScores)
 
 
@@ -436,11 +438,15 @@ def getKMeansClustersNumber(data: pd.DataFrame, maxK: int):
 
     #print(bestLabels)
 
-    data["ClustersLabel"] = bestLabels #Adding the KMeans clusters label to each observation
+    data["ClusterLabel"] = bestLabels #Adding the KMeans clusters label to each observation
     #print(data.head(10))
 
 
-
+    g = sns.PairGrid(data, hue="ClusterLabel") #TODO TOO MUCH DATA, DO A SUBSET
+    g.map_diag(sns.histplot)
+    g.map_offdiag(sns.scatterplot)
+    g.add_legend()
+    g.savefig(f"{AnalysisPlotsPath}DiagonalPlot.png")
 
 
     #TODO SEABORN PAIRPLOT AND PAIRGRID PLOTS WITH DENSITY ON A SIDE, SMOOTH HISTOGRAMS AND SCATTERPLOTS ON TOP OF THE DIAGONAL
