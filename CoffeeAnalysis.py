@@ -485,14 +485,13 @@ def KMeansClustering(coffee: pd.DataFrame):
 
 
 
-    g = sns.PairGrid(coffeeSimplified, hue="ClusterLabel", diag_sharey=False) #TODO TOO MUCH DATA, DO A SUBSET
+    g = sns.PairGrid(coffeeSimplified, hue="ClusterLabel")
     g.map_diag(sns.kdeplot)
     g.map_offdiag(sns.scatterplot)
+    g.map_lower(sns.kdeplot)
     g.add_legend()
     g.savefig(f"{AnalysisPlotsPath}CoffeeClusteringPairPlot.png")
 
-
-    #TODO SEABORN PAIRPLOT AND PAIRGRID PLOTS WITH DENSITY ON A SIDE, SMOOTH HISTOGRAMS AND SCATTERPLOTS ON TOP OF THE DIAGONAL
 
 
 
