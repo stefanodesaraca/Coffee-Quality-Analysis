@@ -422,14 +422,13 @@ def getKMeansClustersNumber(data: pd.DataFrame, maxK: int):
         #print(val.values())
         val = list(val.values())[0]
         bestKSilhouetteScore = max(bestKSilhouetteScore, val)
-        if val > bestKSilhouetteScore: bestKSilhouette = kVal
+        if val >= bestKSilhouetteScore: bestKSilhouette = kVal
+        #print(val)
+        #print(bestKSilhouette)
 
-    print(f"Best K: {bestKSilhouette} | Silhouette Score: {bestKSilhouetteScore}")
+    print(f"\nBest K: {bestKSilhouette} | Silhouette Score: {bestKSilhouetteScore}")
 
 
-
-
-    bestKSilhouette
 
     #data["ClustersLabels"] = ...
 
