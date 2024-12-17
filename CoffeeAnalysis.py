@@ -456,9 +456,10 @@ def KMeansClustering(coffee: pd.DataFrame):
     for col in coffee.columns:
         colVars.update({col: np.var(coffee[col])})
 
-    print("\n\nCoffee DataFrame Column Values Variance")
+    print("\n\nCoffee DataFrame Column Values Variance: ")
     print(colVars)
 
+    print("\nColumns Variance Distribution Percentiles:")
     print("50th Percentile: ", np.percentile(list(colVars.values()), 50))
     print("75th Percentile: ", np.percentile(list(colVars.values()), 75))
     print("90th Percentile: ", np.percentile(list(colVars.values()), 90))
