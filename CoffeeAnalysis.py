@@ -431,33 +431,7 @@ def getKMeansClustersNumber(data: pd.DataFrame, maxK: int):
 
     print(f"\nBest K: {bestKSilhouette} | Silhouette Score: {bestKSilhouetteScore}")
 
-
-    bestKMeans = KMeans(n_clusters=bestKSilhouette, random_state=100) #Using the best K obtained from the Silhouette Method since it's more accurate
-    bestKMeans.fit(data)
-    bestLabels = bestKMeans.labels_
-
-    #print(bestLabels)
-
-    data["ClusterLabel"] = bestLabels #Adding the KMeans clusters label to each observation
-    #print(data.head(10))
-
-
-    g = sns.PairGrid(data, hue="ClusterLabel") #TODO TOO MUCH DATA, DO A SUBSET
-    g.map_diag(sns.histplot)
-    g.map_offdiag(sns.scatterplot)
-    g.add_legend()
-    g.savefig(f"{AnalysisPlotsPath}DiagonalPlot.png")
-
-
-    #TODO SEABORN PAIRPLOT AND PAIRGRID PLOTS WITH DENSITY ON A SIDE, SMOOTH HISTOGRAMS AND SCATTERPLOTS ON TOP OF THE DIAGONAL
-
-
-
-    if visualizer.elbow_value_ is not None:
-        return visualizer.elbow_value_
-    else:
-        print("\033[92mNo Elbow Value Found")
-        return None
+    return bestKSilhouette #Returning the best K obtained from the Silhouette Method since it's more accurate
 
 
 def KMeansClustering(coffee: pd.DataFrame):
@@ -466,9 +440,29 @@ def KMeansClustering(coffee: pd.DataFrame):
 
     k = getKMeansClustersNumber(coffee, 10)
 
+    bestKMeans = KMeans(n_clusters=k, random_state=100)
+    bestKMeans.fit(coffee)
+    bestLabels = bestKMeans.labels_
+
+    #print(bestLabels)
+
+    coffee["ClusterLabel"] = bestLabels  #Adding the KMeans clusters label to each observation
+    #print(data.head(10))
 
 
 
+    #Checking every column's variance
+    print(coffee.std)
+
+
+    g = sns.PairGrid(coffee.drop(columns=["Uniformity", "CleanCup", "Sweetness"]), hue="ClusterLabel") #TODO TOO MUCH DATA, DO A SUBSET
+    g.map_diag(sns.kdeplot)
+    g.map_offdiag(sns.scatterplot)
+    g.add_legend()
+    g.savefig(f"{AnalysisPlotsPath}CoffeeClusteringPairPlot.png")
+
+
+    #TODO SEABORN PAIRPLOT AND PAIRGRID PLOTS WITH DENSITY ON A SIDE, SMOOTH HISTOGRAMS AND SCATTERPLOTS ON TOP OF THE DIAGONAL
 
 
 
