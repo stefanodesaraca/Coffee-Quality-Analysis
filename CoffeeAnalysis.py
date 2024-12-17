@@ -479,18 +479,17 @@ def KMeansClustering(coffee: pd.DataFrame):
         if np.var(coffee[c]) >= seventyFifth: coffeeSimplifiedColumns.append(c) #Only keeping columns which have variance more or equal than the 75th percentile of the distribution made by every column's variance
 
 
-    coffeeSimplified = coffee[coffeeSimplifiedColumns]
+    coffeeSimplified = coffee[coffeeSimplifiedColumns] #A simplified version of the cofffee dataframe which only includes columns with variance higher than the 75th of the distribution of every columns' variance
 
-    print(coffeeSimplified)
+    #print(coffeeSimplified)
 
 
-
-    g = sns.PairGrid(coffeeSimplified, hue="ClusterLabel")
-    g.map_diag(sns.kdeplot)
-    g.map_offdiag(sns.scatterplot)
-    g.map_lower(sns.kdeplot)
-    g.add_legend()
-    g.savefig(f"{AnalysisPlotsPath}CoffeeClusteringPairPlot.png")
+    coffeeClustersPlot = sns.PairGrid(coffeeSimplified, hue="ClusterLabel")
+    coffeeClustersPlot.map_diag(sns.kdeplot)
+    coffeeClustersPlot.map_offdiag(sns.scatterplot)
+    coffeeClustersPlot.map_lower(sns.kdeplot)
+    coffeeClustersPlot.add_legend()
+    coffeeClustersPlot.savefig(f"{AnalysisPlotsPath}CoffeeClusteringPairPlot.png")
 
 
 
