@@ -264,7 +264,7 @@ def SKLPrincipalComponents(data: pd.DataFrame):
     explainedVarCumSum = np.cumsum(explainedVariancePercentage)
 
     plt.figure(figsize=(16, 9))
-    bars = plt.bar(x=range(1, len(explainedVariancePercentage)+1), height=explainedVariancePercentage, tick_label=labels, alpha=0.5)
+    bars = plt.bar(x=range(1, len(explainedVariancePercentage)+1), height=explainedVariancePercentage, tick_label=labels, alpha=0.5, label='Explained Variance')
     plt.bar_label(bars, [f"{val:.2f}%" for val in explainedVariancePercentage], padding=3)
     plt.step(range(1, len(explainedVariancePercentage)+1), explainedVarCumSum, where='mid', label='Cumulative Explained Variance')
     plt.xlabel("Principal Components")
@@ -442,7 +442,8 @@ def getKMeansClustersFullAnalysis(data: pd.DataFrame, maxK: int):
             bestKMetricsAndScores.update({s: {}})
             bestKMetricsAndScores[s].update({bestMetric: bestScore}) #Creating a dictionary which contains the best metric and corresponding score for K clusters
 
-    print("*** SILHOUETTE METHOD ***")
+
+    print("\n\n*** SILHOUETTE METHOD ***")
 
     print("All Silhouette Scores For Three Different Metrics For Each K Number of Clusters: ")
     print(silhouetteScores)
@@ -480,14 +481,14 @@ def KMeansClustering(coffee: pd.DataFrame):
 @savePlots
 def KMeansClusteringPlot(data: pd.DataFrame, labels: list, K: int, varianceValuableColumns: list):
 
-    data[f"{K}KClusterLabel"] = labels  #Adding the Kth KMeans clustering label to each observation
+    data[f"K{K}ClusterLabel"] = labels  #Adding the Kth KMeans clustering label to each observation
 
-    varianceValuableColumns.append(f"{K}KClusterLabel") #The Kth clustering labels need to be present in the dataframe by default, otherwise it won't be possible to create the plot in case it doesn't have a variance higher than the 75th percentile of the distribution of columns' variance
+    varianceValuableColumns.append(f"K{K}ClusterLabel") #The Kth clustering labels need to be present in the dataframe by default, otherwise it won't be possible to create the plot in case it doesn't have a variance higher than the 75th percentile of the distribution of columns' variance
     data = data[varianceValuableColumns] #A simplified version of the coffee dataframe which only includes columns with variance higher than the 75th of the distribution of every columns' variance
 
     #print(data.head(10))
 
-    coffeeClustersPlot = sns.PairGrid(data, hue=f"{K}KClusterLabel", palette=pairedColorScale)
+    coffeeClustersPlot = sns.PairGrid(data, hue=f"K{K}ClusterLabel", palette=pairedColorScale)
     coffeeClustersPlot.map_diag(sns.kdeplot)
     coffeeClustersPlot.map_offdiag(sns.scatterplot)
     coffeeClustersPlot.map_lower(sns.kdeplot)
