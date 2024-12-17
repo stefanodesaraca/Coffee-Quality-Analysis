@@ -459,17 +459,33 @@ def KMeansClustering(coffee: pd.DataFrame):
     print("\n\nCoffee DataFrame Column Values Variance: ")
     print(colVars)
 
+    fiftieth = np.percentile(list(colVars.values()), 50)
+    seventyFifth = np.percentile(list(colVars.values()), 75)
+    ninetieth = np.percentile(list(colVars.values()), 90)
+    ninetyFifth = np.percentile(list(colVars.values()), 95)
+    ninetyNinth = np.percentile(list(colVars.values()), 99)
+
     print("\nColumns Variance Distribution Percentiles:")
-    print("50th Percentile: ", np.percentile(list(colVars.values()), 50))
-    print("75th Percentile: ", np.percentile(list(colVars.values()), 75))
-    print("90th Percentile: ", np.percentile(list(colVars.values()), 90))
-    print("95th Percentile: ", np.percentile(list(colVars.values()), 95))
-    print("99th Percentile: ", np.percentile(list(colVars.values()), 99))
+    print("50th Percentile: ", fiftieth)
+    print("75th Percentile: ", seventyFifth)
+    print("90th Percentile: ", ninetieth)
+    print("95th Percentile: ", ninetyFifth)
+    print("99th Percentile: ", ninetyNinth)
+
+
+    coffeeSimplifiedColumns = ["ClusterLabel"] #ClusterLabel needs to be present in the dataframe by default, otherwise it won't be possible to create the plot in case it doesn't have a variance higher than the 75th percentile of the distribution of columns' variance
+
+    for c in coffee.columns:
+        if np.var(coffee[c]) >= seventyFifth: coffeeSimplifiedColumns.append(c) #Only keeping columns which have variance more or equal than the 75th percentile of the distribution made by every column's variance
+
+
+    coffeeSimplified = coffee[coffeeSimplifiedColumns]
+
+    print(coffeeSimplified)
 
 
 
-
-    g = sns.PairGrid(coffee.drop(columns=["Uniformity", "CleanCup", "Sweetness"]), hue="ClusterLabel") #TODO TOO MUCH DATA, DO A SUBSET
+    g = sns.PairGrid(coffeeSimplified, hue="ClusterLabel", diag_sharey=False) #TODO TOO MUCH DATA, DO A SUBSET
     g.map_diag(sns.kdeplot)
     g.map_offdiag(sns.scatterplot)
     g.add_legend()
