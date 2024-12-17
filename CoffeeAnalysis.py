@@ -450,9 +450,22 @@ def KMeansClustering(coffee: pd.DataFrame):
     #print(data.head(10))
 
 
+    colVars = {}
 
     #Checking every column's variance
-    print(coffee.std)
+    for col in coffee.columns:
+        colVars.update({col: np.var(coffee[col])})
+
+    print("\n\nCoffee DataFrame Column Values Variance")
+    print(colVars)
+
+    print("50th Percentile: ", np.percentile(list(colVars.values()), 50))
+    print("75th Percentile: ", np.percentile(list(colVars.values()), 75))
+    print("90th Percentile: ", np.percentile(list(colVars.values()), 90))
+    print("95th Percentile: ", np.percentile(list(colVars.values()), 95))
+    print("99th Percentile: ", np.percentile(list(colVars.values()), 99))
+
+
 
 
     g = sns.PairGrid(coffee.drop(columns=["Uniformity", "CleanCup", "Sweetness"]), hue="ClusterLabel") #TODO TOO MUCH DATA, DO A SUBSET
