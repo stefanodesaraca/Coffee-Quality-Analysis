@@ -415,7 +415,8 @@ def getKMeansClustersFullAnalysis(data: pd.DataFrame, maxK: int):
         labels = sObj.labels_
         #print(labels)
 
-        KMeansClusteringPlot(data=data, labels=labels, K=s, varianceValuableColumns=varianceValuableColumns)
+        KMeansClusteringPlot(clusteringData=data, labels=labels, K=s,
+                             varianceValuableColumns=varianceValuableColumns)
 
         silhouetteScoreEuclidean = silhouette_score(data, labels, metric="euclidean", random_state=100)
         silhouetteScoreManhattan = silhouette_score(data, labels, metric="manhattan", random_state=100)
@@ -443,6 +444,8 @@ def getKMeansClustersFullAnalysis(data: pd.DataFrame, maxK: int):
             bestKMetricsAndScores[s].update({bestMetric: bestScore}) #Creating a dictionary which contains the best metric and corresponding score for K clusters
 
 
+    print(data)
+
     print("\n\n*** SILHOUETTE METHOD ***")
 
     print("All Silhouette Scores For Three Different Metrics For Each K Number of Clusters: ")
@@ -466,29 +469,41 @@ def getKMeansClustersFullAnalysis(data: pd.DataFrame, maxK: int):
 
     print(f"\nBest K: {bestKSilhouette} | Silhouette Score: {bestKSilhouetteScore}")
 
+    #Executing clustering again to return the best K labels too
+    bestKMeans = KMeans(n_clusters=bestKSilhouette, random_state=100)
+    bestKMeans.fit(data)
+    bestLabels = bestKMeans.labels_
 
-    return bestKSilhouette #Returning the best K obtained from the Silhouette Method since it's more accurate
+
+    return bestKSilhouette, bestLabels #Returning the best K obtained from the Silhouette Method since it's more accurate
 
 
 def KMeansClustering(coffee: pd.DataFrame):
 
     coffee = getNumericalColumnsDataset(coffee)
-    k = getKMeansClustersFullAnalysis(coffee, 10)
+    bestK, bestLabels = getKMeansClustersFullAnalysis(coffee, 10)
+
+    #Discovering which cluster do coffee varieties belong to
+
+    def varietyClusterDiscoverPlot(data, labels):
+        print("Hello")
+
+
 
     return None
 
 
 @savePlots
-def KMeansClusteringPlot(data: pd.DataFrame, labels: list, K: int, varianceValuableColumns: list):
+def KMeansClusteringPlot(clusteringData: pd.DataFrame, labels: list, K: int, varianceValuableColumns: list):
 
-    data[f"K{K}ClusterLabel"] = labels  #Adding the Kth KMeans clustering label to each observation
+    clusteringData[f"K{K}ClusterLabel"] = labels  #Adding the Kth KMeans clustering label to each observation
 
     varianceValuableColumns.append(f"K{K}ClusterLabel") #The Kth clustering labels need to be present in the dataframe by default, otherwise it won't be possible to create the plot in case it doesn't have a variance higher than the 75th percentile of the distribution of columns' variance
-    data = data[varianceValuableColumns] #A simplified version of the coffee dataframe which only includes columns with variance higher than the 75th of the distribution of every columns' variance
+    clusteringData = clusteringData[varianceValuableColumns] #A simplified version of the coffee dataframe which only includes columns with variance higher than the 75th of the distribution of every columns' variance
 
     #print(data.head(10))
 
-    coffeeClustersPlot = sns.PairGrid(data, hue=f"K{K}ClusterLabel", palette=pairedColorScale)
+    coffeeClustersPlot = sns.PairGrid(clusteringData, hue=f"K{K}ClusterLabel", palette=pairedColorScale)
     coffeeClustersPlot.map_diag(sns.kdeplot)
     coffeeClustersPlot.map_offdiag(sns.scatterplot)
     coffeeClustersPlot.map_lower(sns.kdeplot)
@@ -496,14 +511,14 @@ def KMeansClusteringPlot(data: pd.DataFrame, labels: list, K: int, varianceValua
     coffeeClustersPlot.set(title=f"{K} Clusters K-Means Clustering")
 
     varianceValuableColumns.remove(f"K{K}ClusterLabel") #Removing the old column which won't be useful for the next plot since it won't contain the right clustering labels anymore
+    clusteringData.drop(columns=[f"K{K}ClusterLabel"], inplace=True)
 
     return f"Coffee{K}ClustersPairPlot", coffeeClustersPlot, AnalysisPlotsPath
 
 
-    #TODO SHOW CLUSTER LABELS IN WORLD MAP WITH PLOTLY
 
 
-
+#TODO WHY DON'T COLUMNS DROP?
 
 
 
