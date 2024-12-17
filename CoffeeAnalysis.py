@@ -24,14 +24,13 @@ from yellowbrick.cluster import KElbowVisualizer
 
 from sklearn.cluster import DBSCAN
 
-
-
 simplefilter("ignore")
 
 viridisColorScale = sns.color_palette("viridis")
 magmaColorScale = sns.color_palette("magma")
 crestColorScale = sns.color_palette("crest")
 flareColorScale = sns.color_palette("flare")
+pairedColorScale = sns.color_palette("Paired")
 
 os.makedirs("ShapiroWilkTests", exist_ok=True)
 os.makedirs("EDAPlots", exist_ok=True)
@@ -332,7 +331,39 @@ def MLXTPrincipalComponents(data: pd.DataFrame):
     return None
 
 
-def getKMeansClustersNumber(data: pd.DataFrame, maxK: int):
+def getKMeansClustersFullAnalysis(data: pd.DataFrame, maxK: int):
+
+    #-------------------------- Useful data for later plotting --------------------------
+
+    colVariances = {}
+
+    # Checking every column's variance
+    for col in data.columns:
+        colVariances.update({col: np.var(data[col])})
+
+    print("\n\nCoffee DataFrame Column Values Variance: ")
+    print(colVariances)
+
+    fiftieth = np.percentile(list(colVariances.values()), 50)
+    seventyFifth = np.percentile(list(colVariances.values()), 75)
+    ninetieth = np.percentile(list(colVariances.values()), 90)
+    ninetyFifth = np.percentile(list(colVariances.values()), 95)
+    ninetyNinth = np.percentile(list(colVariances.values()), 99)
+
+    print("Columns Variance Distribution Percentiles:")
+    print("50th Percentile: ", fiftieth)
+    print("75th Percentile: ", seventyFifth)
+    print("90th Percentile: ", ninetieth)
+    print("95th Percentile: ", ninetyFifth)
+    print("99th Percentile: ", ninetyNinth)
+    print("\n\n")
+
+    varianceValuableColumns = []
+
+    for c in data.columns:
+        if np.var(data[c]) >= seventyFifth: varianceValuableColumns.append(c)  # Only keeping columns which have variance more or equal than the 75th percentile of the distribution made by every column's variance
+
+    # -----------------------------------------------------------------------------------
 
     means = []
     inertias = []
@@ -372,8 +403,8 @@ def getKMeansClustersNumber(data: pd.DataFrame, maxK: int):
 
     print("\n")
 
+
     #Silhouette method
-    print("*** SILHOUETTE METHOD ***")
 
     silhouetteScores = {}
     bestKMetricsAndScores = {}
@@ -383,6 +414,8 @@ def getKMeansClustersNumber(data: pd.DataFrame, maxK: int):
         sObj.fit(data)
         labels = sObj.labels_
         #print(labels)
+
+        KMeansClusteringPlot(data=data, labels=labels, K=s, varianceValuableColumns=varianceValuableColumns)
 
         silhouetteScoreEuclidean = silhouette_score(data, labels, metric="euclidean", random_state=100)
         silhouetteScoreManhattan = silhouette_score(data, labels, metric="manhattan", random_state=100)
@@ -409,6 +442,7 @@ def getKMeansClustersNumber(data: pd.DataFrame, maxK: int):
             bestKMetricsAndScores.update({s: {}})
             bestKMetricsAndScores[s].update({bestMetric: bestScore}) #Creating a dictionary which contains the best metric and corresponding score for K clusters
 
+    print("*** SILHOUETTE METHOD ***")
 
     print("All Silhouette Scores For Three Different Metrics For Each K Number of Clusters: ")
     print(silhouetteScores)
@@ -431,65 +465,42 @@ def getKMeansClustersNumber(data: pd.DataFrame, maxK: int):
 
     print(f"\nBest K: {bestKSilhouette} | Silhouette Score: {bestKSilhouetteScore}")
 
+
     return bestKSilhouette #Returning the best K obtained from the Silhouette Method since it's more accurate
 
 
 def KMeansClustering(coffee: pd.DataFrame):
 
     coffee = getNumericalColumnsDataset(coffee)
+    k = getKMeansClustersFullAnalysis(coffee, 10)
 
-    k = getKMeansClustersNumber(coffee, 10)
+    return None
 
-    bestKMeans = KMeans(n_clusters=k, random_state=100)
-    bestKMeans.fit(coffee)
-    bestLabels = bestKMeans.labels_
 
-    #print(bestLabels)
+@savePlots
+def KMeansClusteringPlot(data: pd.DataFrame, labels: list, K: int, varianceValuableColumns: list):
 
-    coffee["ClusterLabel"] = bestLabels  #Adding the KMeans clusters label to each observation
+    data[f"{K}KClusterLabel"] = labels  #Adding the Kth KMeans clustering label to each observation
+
+    varianceValuableColumns.append(f"{K}KClusterLabel") #The Kth clustering labels need to be present in the dataframe by default, otherwise it won't be possible to create the plot in case it doesn't have a variance higher than the 75th percentile of the distribution of columns' variance
+    data = data[varianceValuableColumns] #A simplified version of the coffee dataframe which only includes columns with variance higher than the 75th of the distribution of every columns' variance
+
     #print(data.head(10))
 
-
-    colVars = {}
-
-    #Checking every column's variance
-    for col in coffee.columns:
-        colVars.update({col: np.var(coffee[col])})
-
-    print("\n\nCoffee DataFrame Column Values Variance: ")
-    print(colVars)
-
-    fiftieth = np.percentile(list(colVars.values()), 50)
-    seventyFifth = np.percentile(list(colVars.values()), 75)
-    ninetieth = np.percentile(list(colVars.values()), 90)
-    ninetyFifth = np.percentile(list(colVars.values()), 95)
-    ninetyNinth = np.percentile(list(colVars.values()), 99)
-
-    print("\nColumns Variance Distribution Percentiles:")
-    print("50th Percentile: ", fiftieth)
-    print("75th Percentile: ", seventyFifth)
-    print("90th Percentile: ", ninetieth)
-    print("95th Percentile: ", ninetyFifth)
-    print("99th Percentile: ", ninetyNinth)
-
-
-    coffeeSimplifiedColumns = ["ClusterLabel"] #ClusterLabel needs to be present in the dataframe by default, otherwise it won't be possible to create the plot in case it doesn't have a variance higher than the 75th percentile of the distribution of columns' variance
-
-    for c in coffee.columns:
-        if np.var(coffee[c]) >= seventyFifth: coffeeSimplifiedColumns.append(c) #Only keeping columns which have variance more or equal than the 75th percentile of the distribution made by every column's variance
-
-
-    coffeeSimplified = coffee[coffeeSimplifiedColumns] #A simplified version of the cofffee dataframe which only includes columns with variance higher than the 75th of the distribution of every columns' variance
-
-    #print(coffeeSimplified)
-
-
-    coffeeClustersPlot = sns.PairGrid(coffeeSimplified, hue="ClusterLabel")
+    coffeeClustersPlot = sns.PairGrid(data, hue=f"{K}KClusterLabel", palette=pairedColorScale)
     coffeeClustersPlot.map_diag(sns.kdeplot)
     coffeeClustersPlot.map_offdiag(sns.scatterplot)
     coffeeClustersPlot.map_lower(sns.kdeplot)
     coffeeClustersPlot.add_legend()
-    coffeeClustersPlot.savefig(f"{AnalysisPlotsPath}CoffeeClusteringPairPlot.png")
+    coffeeClustersPlot.set(title=f"{K} Clusters K-Means Clustering")
+
+    varianceValuableColumns.remove(f"K{K}ClusterLabel") #Removing the old column which won't be useful for the next plot since it won't contain the right clustering labels anymore
+
+    return f"Coffee{K}ClustersPairPlot", coffeeClustersPlot, AnalysisPlotsPath
+
+
+    #TODO SHOW CLUSTER LABELS IN WORLD MAP WITH PLOTLY
+
 
 
 
