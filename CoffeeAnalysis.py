@@ -408,11 +408,12 @@ def getKMeansClustersNumber(data: pd.DataFrame, maxK: int):
             bestKMetricsAndScores[s].update({bestMetric: bestScore}) #Creating a dictionary which contains the best metric and corresponding score for K clusters
 
 
+    print("\nAll Silhouette Scores For Three Different Metrics For Each K Number of Clusters: ")
+    print(silhouetteScores)
+
     print("Best Metric and Score For Each K Number of Clusters:")
     print(bestKMetricsAndScores)
 
-    print("\nAll Silhouette Scores For Three Different Metrics For Each K Number of Clusters: ")
-    print(silhouetteScores)
 
     bestKSilhouette = 0 #The best K
     bestKSilhouetteScore = 0 #The silhouette score of the best K
@@ -429,8 +430,16 @@ def getKMeansClustersNumber(data: pd.DataFrame, maxK: int):
     print(f"\nBest K: {bestKSilhouette} | Silhouette Score: {bestKSilhouetteScore}")
 
 
+    bestKMeans = KMeans(n_clusters=bestKSilhouette, random_state=100) #Using the best K obtained from the Silhouette Method since it's more accurate
+    bestKMeans.fit(data)
+    bestLabels = bestKMeans.labels_
 
-    #data["ClustersLabels"] = ...
+    #print(bestLabels)
+
+    data["ClustersLabel"] = bestLabels #Adding the KMeans clusters label to each observation
+    #print(data.head(10))
+
+
 
 
 
