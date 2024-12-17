@@ -1,6 +1,8 @@
 import os
 import json
 import inspect
+
+from pandas.core.common import random_state
 from scipy import stats
 import pandas as pd
 import numpy as np
@@ -17,6 +19,7 @@ from sklearn.preprocessing import StandardScaler
 from mlxtend.feature_extraction import PrincipalComponentAnalysis
 
 from sklearn.cluster import KMeans
+from sklearn.metrics import silhouette_score
 from yellowbrick.cluster import KElbowVisualizer
 
 from sklearn.cluster import DBSCAN
@@ -93,6 +96,8 @@ def EDA(coffee: pd.DataFrame):
 
     numericVariablesName = coffee.select_dtypes(include=np.number).columns.tolist()
     numericVariablesName.remove("ID")
+    numericVariablesName.remove("NBags")
+    numericVariablesName.remove("BagWeight")
 
     print("-------------------- Short Dataset Overview --------------------")
 
@@ -147,7 +152,7 @@ def EDA(coffee: pd.DataFrame):
         print(coffeeInfo, "\n")
 
 
-    print("Numerical Variables: ", numericVariablesName)
+    print("Useful Numerical Variables: ", numericVariablesName)
 
     print("\n*** CORRELATION BETWEEN NUMERICAL VARIABLES ***")
     print(coffee.corr(numeric_only=True), "\n") #Checking correlations between the variables
@@ -222,6 +227,8 @@ def getNumericalColumnsDataset(data: pd.DataFrame):
 
     numericColumns = data.select_dtypes(include=np.number).columns.tolist()
     numericColumns.remove("ID")
+    numericColumns.remove("NBags")
+    numericColumns.remove("BagWeight")
 
     data = data[numericColumns]  # Overwriting the old dataframe with a new one keeping only numerical columns to then execute PCA. So this is coffee, but only with numerical columns
 
@@ -328,14 +335,13 @@ def getKMeansClustersNumber(data: pd.DataFrame, maxK: int):
     means = []
     inertias = []
 
-    for k in range(1, maxK):
+    for k in range(2, maxK+1):
         kmeans = KMeans(n_clusters=k, random_state=100)
         kmeans.fit(data)
 
         means.append(k)
         inertias.append(kmeans.inertia_)
 
-    #TODO PRETTIFY THIS PLOT: TITLE, ETC.
     #Manual elbow plot generation
     plt.figure(figsize=(16, 9))
     plt.plot(means, inertias, "o-")
@@ -343,6 +349,7 @@ def getKMeansClustersNumber(data: pd.DataFrame, maxK: int):
     plt.ylabel("Inertia")
     plt.grid(which='minor', color='#EEEEEE', linestyle=':', linewidth=0.5)
     plt.minorticks_on()
+    plt.title("Manual K-Means Elbow Plot")
 
     plt.savefig(f"{AnalysisPlotsPath}KMeansManualElbowPlot.png", dpi=300)
 
@@ -352,24 +359,98 @@ def getKMeansClustersNumber(data: pd.DataFrame, maxK: int):
     visualizer = KElbowVisualizer(km, k=(2, maxK))
     visualizer.fit(data)
 
-    kValues = visualizer.k_values_
+    print("*** ELBOW METHOD ***")
 
     print("Elbow Values: ", visualizer.elbow_score_)
     print("K Values: ", visualizer.k_values_)
     print("Distance Metric: ", visualizer.distance_metric)
+    print("Best K From Elbow Method: ", visualizer.elbow_value_)
 
     visualizer.show(outpath=f"{AnalysisPlotsPath}KMeansAutomaticElbowPlot.png")
 
-    #TODO ADD SILHOUETTE AND RETURN TRUE OPTIMAL NUMBER OF CLUSTERS
+    print("\n")
 
-    return
+    #Silhouette method
+    print("*** SILHOUETTE METHOD ***")
+
+    silhouetteScores = {}
+    bestKMetricsAndScores = {}
+
+    for s in range(2, maxK+1):
+        sObj = KMeans(n_clusters=s, random_state=100)
+        sObj.fit(data)
+        labels = sObj.labels_
+        #print(labels)
+
+        silhouetteScoreEuclidean = silhouette_score(data, labels, metric="euclidean", random_state=100)
+        silhouetteScoreManhattan = silhouette_score(data, labels, metric="manhattan", random_state=100)
+        silhouetteScoreMinkowski = silhouette_score(data, labels, metric="minkowski", random_state=100)
+
+        #print(f"Silhouette score for {s} clusters (Euclidean Distance): ", silhouetteScoreEuclidean)
+        #print(f"Silhouette score for {s} clusters (Manhattan Distance): ", silhouetteScoreManhattan)
+        #print(f"Silhouette score for {s} clusters (Minkowski Distance): ", silhouetteScoreMinkowski)
+
+
+        silhouetteScores[s] = {"Euclidean": silhouetteScoreEuclidean,
+                               "Manhattan": silhouetteScoreManhattan,
+                               "Minkowski": silhouetteScoreMinkowski}
+
+        for scoreDict in silhouetteScores.values():
+            bestMetric = None
+
+            bestScore = max(list(scoreDict.values()))
+
+            for key, value in scoreDict.items():
+                if scoreDict[key] == bestScore:
+                    bestMetric = key
+
+            bestKMetricsAndScores.update({s: {}})
+            bestKMetricsAndScores[s].update({bestMetric: bestScore}) #Creating a dictionary which contains the best metric and corresponding score for K clusters
+
+
+    print("Best Metric and Score For Each K Number of Clusters:")
+    print(bestKMetricsAndScores)
+
+    print("\nAll Silhouette Scores For Three Different Metrics For Each K Number of Clusters: ")
+    print(silhouetteScores)
+
+    bestKSilhouette = 0 #The best K
+    bestKSilhouetteScore = 0 #The silhouette score of the best K
+
+    for kVal in bestKMetricsAndScores.keys():
+        val = bestKMetricsAndScores[kVal]
+        #print(val.values())
+        val = list(val.values())[0]
+        bestKSilhouetteScore = max(bestKSilhouetteScore, val)
+        if val > bestKSilhouetteScore: bestKSilhouette = kVal
+
+    print(f"Best K: {bestKSilhouette} | Silhouette Score: {bestKSilhouetteScore}")
+
+
+
+
+    bestKSilhouette
+
+    #data["ClustersLabels"] = ...
+
+
+
+    #TODO SEABORN PAIRPLOT AND PAIRGRID PLOTS WITH DENSITY ON A SIDE, SMOOTH HISTOGRAMS AND SCATTERPLOTS ON TOP OF THE DIAGONAL
+
+
+
+    if visualizer.elbow_value_ is not None:
+        return visualizer.elbow_value_
+    else:
+        print("\033[92mNo Elbow Value Found")
+        return None
 
 
 def KMeansClustering(coffee: pd.DataFrame):
 
     coffee = getNumericalColumnsDataset(coffee)
 
-    getKMeansClustersNumber(coffee, 10)
+    k = getKMeansClustersNumber(coffee, 10)
 
 
 

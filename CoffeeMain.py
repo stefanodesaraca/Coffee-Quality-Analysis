@@ -1,10 +1,11 @@
 
-from CoffeeReading import readDataset, cleanData
+from CoffeeReading import readDataset, cleanData, exportCleanData
 from CoffeeAnalysis import EDA, datasetPreprocessing, SKLPrincipalComponents, MLXTPrincipalComponents, KMeansClustering
 
 #coffeeData = readDataset("coffee.csv")
 
 coffeeData = cleanData("coffee.csv")
+exportCleanData(coffeeData)
 
 EDA(coffeeData)
 
