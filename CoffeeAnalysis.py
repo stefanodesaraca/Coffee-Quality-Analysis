@@ -22,8 +22,6 @@ from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score
 from yellowbrick.cluster import KElbowVisualizer
 
-from sklearn.cluster import DBSCAN
-
 simplefilter("ignore")
 
 viridisColorScale = sns.color_palette("viridis")
@@ -259,8 +257,6 @@ def SKLPrincipalComponents(data: pd.DataFrame):
     print("Principal Components and Explained Variance: ")
     print(list(SKLPCAExplainedVarianceResults))
 
-    #print(pca.get_feature_names_out())
-
     explainedVarCumSum = np.cumsum(explainedVariancePercentage)
 
     plt.figure(figsize=(16, 9))
@@ -444,7 +440,10 @@ def getKMeansClustersFullAnalysis(data: pd.DataFrame, maxK: int):
             bestKMetricsAndScores[s].update({bestMetric: bestScore}) #Creating a dictionary which contains the best metric and corresponding score for K clusters
 
 
-    print(data)
+    labelFeatures = [f"K{i}ClusterLabel" for i in range(2, maxK+1)]
+    data.drop(columns=labelFeatures, inplace=True) #Removing cluster label features from the dataframe
+
+    #print(data)
 
     print("\n\n*** SILHOUETTE METHOD ***")
 
@@ -509,6 +508,7 @@ def KMeansClusteringPlot(clusteringData: pd.DataFrame, labels: list, K: int, var
     coffeeClustersPlot.map_lower(sns.kdeplot)
     coffeeClustersPlot.add_legend()
     coffeeClustersPlot.set(title=f"{K} Clusters K-Means Clustering")
+    coffeeClustersPlot.tight_layout()
 
     varianceValuableColumns.remove(f"K{K}ClusterLabel") #Removing the old column which won't be useful for the next plot since it won't contain the right clustering labels anymore
     clusteringData.drop(columns=[f"K{K}ClusterLabel"], inplace=True)
