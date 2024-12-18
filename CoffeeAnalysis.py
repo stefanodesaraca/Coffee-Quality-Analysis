@@ -6,6 +6,7 @@ from pandas.core.common import random_state
 from scipy import stats
 import pandas as pd
 import numpy as np
+from scipy.special import title
 from tqdm import tqdm
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -517,8 +518,7 @@ def clusteringRelatedPlots(data: pd.DataFrame, labels: list):
 
     data["ClusterLabel"] = labels
 
-    fig = px.scatter_3d(data, x='Aroma', y='Acidity', z='Flavor', color='ClusterLabel')
-    fig.show()
+    fig = px.scatter_3d(data, x='Aroma', y='Acidity', z='Flavor', color='ClusterLabel', color_discrete_map=pairedColorScale, title="Aroma, Acidity and Flavor with Markers Colored by Cluster")
 
 
 
