@@ -473,7 +473,6 @@ def getKMeansClustersFullAnalysis(data: pd.DataFrame, maxK: int):
     bestKMeans.fit(data)
     bestLabels = bestKMeans.labels_
 
-
     return bestKSilhouette, bestLabels #Returning the best K obtained from the Silhouette Method since it's more accurate
 
 
@@ -482,11 +481,9 @@ def KMeansClustering(coffee: pd.DataFrame):
     coffee = getNumericalColumnsDataset(coffee)
     bestK, bestLabels = getKMeansClustersFullAnalysis(coffee, 10)
 
-    #Discovering which cluster do coffee varieties belong to
+    clusteringRelatedPlots(coffee, bestLabels)
 
-    def varietyClusterDiscoverPlot(data, labels):
-        print("Hello")
-
+    #TODO CALL HERE CLUSTERING RELATED PLOTTING FUNCTION
 
 
     return None
@@ -516,9 +513,13 @@ def KMeansClusteringPlot(clusteringData: pd.DataFrame, labels: list, K: int, var
     return f"Coffee{K}ClustersPairPlot", coffeeClustersPlot, AnalysisPlotsPath
 
 
+def clusteringRelatedPlots(data: pd.DataFrame, labels: list):
 
+    data["ClusterLabel"] = labels
 
-#TODO WHY DON'T COLUMNS DROP?
+    fig = px.scatter_3d(data, x='Aroma', y='Acidity', z='Flavor', color='ClusterLabel')
+    fig.show()
+
 
 
 
