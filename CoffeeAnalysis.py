@@ -411,7 +411,7 @@ def getKMeansClustersFullAnalysis(data: pd.DataFrame, maxK: int):
         labels = sObj.labels_
         #print(labels)
 
-        print(f"Cluster Centroids For K={s}: {sObj.cluster_centers_}\n\n")
+        print(f"Cluster Centroids For K={s}:\n {sObj.cluster_centers_}\n\n")
 
         KMeansClusteringPlot(clusteringData=data, labels=labels, K=s, varianceValuableColumns=varianceValuableColumns)
 
@@ -519,7 +519,7 @@ def clusteringRelatedInsights(data: pd.DataFrame, labels: list):
 
     data["ClusterLabel"] = labels
 
-    threeD = px.scatter_3d(data, x='Aroma', y='Acidity', z='Flavor', color='ClusterLabel', color_continuous_scale=pairedColorScale, title="Aroma, Acidity and Flavor with Markers Colored by Cluster")
+    threeD = px.scatter_3d(data, x='Aroma', y='Acidity', z='Flavor', color='ClusterLabel', color_discrete_map=pairedColorScale, title="Aroma, Acidity and Flavor with Markers Colored by Cluster")
     #TODO RENAME AND SAVE threeD
 
     #------------- Cluster-based insights -------------
