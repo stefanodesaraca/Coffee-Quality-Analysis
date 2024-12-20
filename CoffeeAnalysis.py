@@ -6,7 +6,6 @@ from pandas.core.common import random_state
 from scipy import stats
 import pandas as pd
 import numpy as np
-from scipy.special import title
 from tqdm import tqdm
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -412,8 +411,9 @@ def getKMeansClustersFullAnalysis(data: pd.DataFrame, maxK: int):
         labels = sObj.labels_
         #print(labels)
 
-        KMeansClusteringPlot(clusteringData=data, labels=labels, K=s,
-                             varianceValuableColumns=varianceValuableColumns)
+        print(f"Cluster Centroids For K={s}: {sObj.cluster_centers_}\n\n")
+
+        KMeansClusteringPlot(clusteringData=data, labels=labels, K=s, varianceValuableColumns=varianceValuableColumns)
 
         silhouetteScoreEuclidean = silhouette_score(data, labels, metric="euclidean", random_state=100)
         silhouetteScoreManhattan = silhouette_score(data, labels, metric="manhattan", random_state=100)
@@ -482,9 +482,9 @@ def KMeansClustering(coffee: pd.DataFrame):
     coffee = getNumericalColumnsDataset(coffee)
     bestK, bestLabels = getKMeansClustersFullAnalysis(coffee, 10)
 
-    clusteringRelatedPlots(coffee, bestLabels)
+    clusteringRelatedInsights(coffee, bestLabels)
 
-    #TODO CALL HERE CLUSTERING RELATED PLOTTING FUNCTION
+    #TODO CALL HERE CLUSTERING RELATED INSIGHTS FUNCTION
 
 
     return None
@@ -514,12 +514,35 @@ def KMeansClusteringPlot(clusteringData: pd.DataFrame, labels: list, K: int, var
     return f"Coffee{K}ClustersPairPlot", coffeeClustersPlot, AnalysisPlotsPath
 
 
-def clusteringRelatedPlots(data: pd.DataFrame, labels: list):
+#TODO DECORATE WITH SAVEPLOTS
+def clusteringRelatedInsights(data: pd.DataFrame, labels: list):
 
     data["ClusterLabel"] = labels
 
-    fig = px.scatter_3d(data, x='Aroma', y='Acidity', z='Flavor', color='ClusterLabel', color_discrete_map=pairedColorScale, title="Aroma, Acidity and Flavor with Markers Colored by Cluster")
+    threeD = px.scatter_3d(data, x='Aroma', y='Acidity', z='Flavor', color='ClusterLabel', color_continuous_scale=pairedColorScale, title="Aroma, Acidity and Flavor with Markers Colored by Cluster")
+    #TODO RENAME AND SAVE threeD
 
+    #------------- Cluster-based insights -------------
+
+    #Acidity
+    averageAcidityByCluster = data[["Acidity", "ClusterLabel"]].groupby("ClusterLabel", ascending=False).mean()
+    print("Average Acidity by Cluster:\n", averageAcidityByCluster)
+
+    stdAcidityByCluster = data[["Acidity", "ClusterLabel"]].groupby("ClusterLabel", ascending=False).std()
+    print("Acidity Standard Deviation by Cluster:\n", stdAcidityByCluster)
+
+    sfpAcidityByCluster = np.percentile(data[["Acidity", "ClusterLabel"]].groupby("ClusterLabel", ascending=False), 75) #Seventyfifth percentile
+    print("Acidity 75th Distribution Percentile by Cluster:\n", sfpAcidityByCluster)
+
+    ntAcidityByCluster = np.percentile(data[["Acidity", "ClusterLabel"]].groupby("ClusterLabel", ascending=False), 90) #Ninetith percentile
+    print("Acidity 90th Distribution Percentile by Cluster:\n", ntAcidityByCluster)
+
+
+    #TODO BARPLOTS AND SOMETHING ELSE
+
+    #TODO RETURN PLOTS
+
+    return
 
 
 
