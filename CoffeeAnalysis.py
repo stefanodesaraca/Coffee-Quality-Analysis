@@ -525,16 +525,16 @@ def clusteringRelatedInsights(data: pd.DataFrame, labels: list):
     #------------- Cluster-based insights -------------
 
     #Acidity
-    averageAcidityByCluster = data[["Acidity", "ClusterLabel"]].groupby("ClusterLabel", ascending=False).mean()
+    averageAcidityByCluster = data[["Acidity", "ClusterLabel"]].groupby("ClusterLabel", sort=True).mean()
     print("Average Acidity by Cluster:\n", averageAcidityByCluster)
 
-    stdAcidityByCluster = data[["Acidity", "ClusterLabel"]].groupby("ClusterLabel", ascending=False).std()
+    stdAcidityByCluster = data[["Acidity", "ClusterLabel"]].groupby("ClusterLabel", sort=True).std()
     print("Acidity Standard Deviation by Cluster:\n", stdAcidityByCluster)
 
-    sfpAcidityByCluster = np.percentile(data[["Acidity", "ClusterLabel"]].groupby("ClusterLabel", ascending=False), 75) #Seventyfifth percentile
+    sfpAcidityByCluster = np.percentile(data[["Acidity", "ClusterLabel"]].groupby("ClusterLabel", sort=True), 75) #Seventyfifth percentile
     print("Acidity 75th Distribution Percentile by Cluster:\n", sfpAcidityByCluster)
 
-    ntAcidityByCluster = np.percentile(data[["Acidity", "ClusterLabel"]].groupby("ClusterLabel", ascending=False), 90) #Ninetith percentile
+    ntAcidityByCluster = np.percentile(data[["Acidity", "ClusterLabel"]].groupby("ClusterLabel", sort=True), 90) #Ninetith percentile
     print("Acidity 90th Distribution Percentile by Cluster:\n", ntAcidityByCluster)
 
 
