@@ -522,20 +522,24 @@ def clusteringRelatedInsights(data: pd.DataFrame, labels: list):
     threeD = px.scatter_3d(data, x='Aroma', y='Acidity', z='Flavor', color='ClusterLabel', color_discrete_map=pairedColorScale, title="Aroma, Acidity and Flavor with Markers Colored by Cluster")
     #TODO RENAME AND SAVE threeD
 
+
+
+    print("\n\n\n")
+
     #------------- Cluster-based insights -------------
 
     #Acidity
-    averageAcidityByCluster = data[["Acidity", "ClusterLabel"]].groupby("ClusterLabel", sort=True).mean()
-    print("Average Acidity by Cluster:\n", averageAcidityByCluster)
+    averageAcidityByCluster = data[["Acidity", "ClusterLabel"]].groupby("ClusterLabel", sort=True, as_index=False).mean()
+    print("Average Acidity by Cluster:\n", averageAcidityByCluster, "\n")
 
-    stdAcidityByCluster = data[["Acidity", "ClusterLabel"]].groupby("ClusterLabel", sort=True).std()
-    print("Acidity Standard Deviation by Cluster:\n", stdAcidityByCluster)
+    stdAcidityByCluster = data[["Acidity", "ClusterLabel"]].groupby("ClusterLabel", sort=True, as_index=False).std()
+    print("Acidity Standard Deviation by Cluster:\n", stdAcidityByCluster, "\n")
 
-    sfpAcidityByCluster = np.percentile(data[["Acidity", "ClusterLabel"]].groupby("ClusterLabel", sort=True), 75) #Seventyfifth percentile
-    print("Acidity 75th Distribution Percentile by Cluster:\n", sfpAcidityByCluster)
+    sfpAcidityByCluster = data[["Acidity", "ClusterLabel"]].groupby("ClusterLabel", sort=True, as_index=False).apply(lambda x: np.percentile(x, 75)) #Seventyfifth percentile
+    print("Acidity 75th Distribution Percentile by Cluster:\n", sfpAcidityByCluster, "\n")
 
-    ntAcidityByCluster = np.percentile(data[["Acidity", "ClusterLabel"]].groupby("ClusterLabel", sort=True), 90) #Ninetith percentile
-    print("Acidity 90th Distribution Percentile by Cluster:\n", ntAcidityByCluster)
+    ntAcidityByCluster = data[["Acidity", "ClusterLabel"]].groupby("ClusterLabel", sort=True, as_index=False).apply(lambda x: np.percentile(x, 90)) #Ninetith percentile
+    print("Acidity 90th Distribution Percentile by Cluster:\n", ntAcidityByCluster, "\n")
 
 
     #TODO BARPLOTS AND SOMETHING ELSE
