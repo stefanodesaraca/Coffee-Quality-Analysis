@@ -523,17 +523,19 @@ def clusteringRelatedInsights(data: pd.DataFrame, labels: list):
 
     for ins in insightsVariables:
 
-        averageXByCluster = data[[ins, "ClusterLabel"]].groupby("ClusterLabel", sort=True, as_index=False).mean()
-        print("Average Acidity by Cluster:\n", averageXByCluster, "\n")
+        print(f"{ins}Insights by Cluster for K={max(data["ClusterLabel"])+1}")
 
-        stdXByCluster = data[[ins, "ClusterLabel"]].groupby("ClusterLabel", sort=True, as_index=False).std()
-        print("Acidity Standard Deviation by Cluster:\n", stdXByCluster, "\n")
+        averageXByCluster = data[[ins, "ClusterLabel"]].groupby("ClusterLabel", sort=True, as_index=False, dropna=True).mean()
+        print(f"Average {ins} by Cluster:\n", averageXByCluster, "\n")
 
-        sfpXByCluster = data[[ins, "ClusterLabel"]].groupby("ClusterLabel", sort=True, as_index=False, index="75thPercentile").apply(lambda x: np.percentile(x, 75)) #Seventyfifth percentile
-        print("Acidity 75th Distribution Percentile by Cluster:\n", sfpXByCluster, "\n")
+        stdXByCluster = data[[ins, "ClusterLabel"]].groupby("ClusterLabel", sort=True, as_index=False, dropna=True ).std()
+        print(f"{ins} Standard Deviation by Cluster:\n", stdXByCluster, "\n")
 
-        ntXByCluster = data[[ins, "ClusterLabel"]].groupby("ClusterLabel", sort=True, as_index=False, index="90thPercentile").apply(lambda x: np.percentile(x, 90)) #Ninetith percentile
-        print("Acidity 90th Distribution Percentile by Cluster:\n", ntXByCluster, "\n")
+        sfpXByCluster = data[[ins, "ClusterLabel"]].groupby("ClusterLabel", sort=True, as_index=False, dropna=True).apply(lambda x: np.percentile(x, 75)).rename(columns={None: f"{ins}75thPercentile"}) #Seventyfifth percentile
+        print(f"{ins} 75th Distribution Percentile by Cluster:\n", sfpXByCluster, "\n")
+
+        ntXByCluster = data[[ins, "ClusterLabel"]].groupby("ClusterLabel", sort=True, as_index=False, dropna=True).apply(lambda x: np.percentile(x, 90)).rename(columns={None: f"{ins}90thPercentile"}) #Ninetith percentile
+        print(f"{ins} 90th Distribution Percentile by Cluster:\n", ntXByCluster, "\n")
 
 
     #TODO BARPLOTS AND SOMETHING ELSE
