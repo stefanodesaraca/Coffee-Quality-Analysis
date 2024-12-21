@@ -411,7 +411,7 @@ def getKMeansClustersFullAnalysis(data: pd.DataFrame, maxK: int):
         labels = sObj.labels_
         #print(labels)
 
-        print(f"Cluster Centroids For K={s}:\n {sObj.cluster_centers_}\n\n")
+        print(f"\n\nCluster Centroids For K={s}:\n {sObj.cluster_centers_}")
 
         KMeansClusteringPlot(clusteringData=data, labels=labels, K=s, varianceValuableColumns=varianceValuableColumns)
 
