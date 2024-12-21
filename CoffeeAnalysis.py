@@ -402,7 +402,7 @@ def getKMeansClustersFullAnalysis(data: pd.DataFrame, maxK: int):
         labels = sObj.labels_
         #print(labels)
 
-        print(f"\n\nCluster Centroids For K={s}:\n {sObj.cluster_centers_}")
+        #print(f"\n\nCluster Centroids For K={s}:\n {sObj.cluster_centers_}")
 
         KMeansClusteringPlot(clusteringData=data, labels=labels, K=s, varianceValuableColumns=varianceValuableColumns)
 
@@ -445,7 +445,8 @@ def getKMeansClustersFullAnalysis(data: pd.DataFrame, maxK: int):
     print("Distance Metric: ", visualizer.distance_metric)
     print("Best K From Elbow Method: ", visualizer.elbow_value_)
 
-    print("\n\n\n*** SILHOUETTE METHOD ***")
+
+    print("\n*** SILHOUETTE METHOD ***")
 
     print("All Silhouette Scores For Three Different Metrics For Each K Number of Clusters: ")
     print(silhouetteScores)
@@ -517,6 +518,7 @@ def clusteringRelatedInsights(data: pd.DataFrame, labels: list):
 
     print("\n\n\n")
 
+
     #------------- Cluster-based insights -------------
 
     insightsVariables = ["Aroma", "Flavor", "Aftertaste", "Acidity", "Body", "CleanCup", "Sweetness"]
@@ -540,7 +542,8 @@ def clusteringRelatedInsights(data: pd.DataFrame, labels: list):
 
     #TODO BARPLOTS AND SOMETHING ELSE
 
-    #TODO RETURN PLOTS
+    insightPlots = [threeDVariablesAndClustersViz]
+
 
     return
 
