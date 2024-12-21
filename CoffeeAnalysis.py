@@ -531,10 +531,10 @@ def clusteringRelatedInsights(data: pd.DataFrame, labels: list):
         stdXByCluster = data[[ins, "ClusterLabel"]].groupby("ClusterLabel", sort=True, as_index=False, dropna=True ).std()
         print(f"{ins} Standard Deviation by Cluster:\n", stdXByCluster, "\n")
 
-        sfpXByCluster = data[[ins, "ClusterLabel"]].groupby("ClusterLabel", sort=True, as_index=False, dropna=True).apply(lambda x: np.percentile(x, 75)).rename(columns={None: f"{ins}75thPercentile"}) #Seventyfifth percentile
+        sfpXByCluster = data[[ins, "ClusterLabel"]].groupby("ClusterLabel", sort=True, as_index=False, dropna=True).apply(lambda x: np.percentile(x, 75)).rename(columns={None: "75thPercentile"}) #Seventyfifth percentile
         print(f"{ins} 75th Distribution Percentile by Cluster:\n", sfpXByCluster, "\n")
 
-        ntXByCluster = data[[ins, "ClusterLabel"]].groupby("ClusterLabel", sort=True, as_index=False, dropna=True).apply(lambda x: np.percentile(x, 90)).rename(columns={None: f"{ins}90thPercentile"}) #Ninetith percentile
+        ntXByCluster = data[[ins, "ClusterLabel"]].groupby("ClusterLabel", sort=True, as_index=False, dropna=True).apply(lambda x: np.percentile(x, 90)).rename(columns={None: "90thPercentile"}) #Ninetith percentile
         print(f"{ins} 90th Distribution Percentile by Cluster:\n", ntXByCluster, "\n")
 
 
