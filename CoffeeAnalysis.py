@@ -388,16 +388,7 @@ def getKMeansClustersFullAnalysis(data: pd.DataFrame, maxK: int):
     visualizer = KElbowVisualizer(km, k=(2, maxK))
     visualizer.fit(data)
 
-    print("*** ELBOW METHOD ***")
-
-    print("Elbow Values: ", visualizer.elbow_score_)
-    print("K Values: ", visualizer.k_values_)
-    print("Distance Metric: ", visualizer.distance_metric)
-    print("Best K From Elbow Method: ", visualizer.elbow_value_)
-
     visualizer.show(outpath=f"{AnalysisPlotsPath}KMeansAutomaticElbowPlot.png")
-
-    print("\n")
 
 
     #Silhouette method
@@ -440,13 +431,21 @@ def getKMeansClustersFullAnalysis(data: pd.DataFrame, maxK: int):
             bestKMetricsAndScores.update({s: {}})
             bestKMetricsAndScores[s].update({bestMetric: bestScore}) #Creating a dictionary which contains the best metric and corresponding score for K clusters
 
+        clusteringRelatedInsights(data, labels)
 
     labelFeatures = [f"K{i}ClusterLabel" for i in range(2, maxK+1)]
     data.drop(columns=labelFeatures, inplace=True) #Removing cluster label features from the dataframe
 
     #print(data)
 
-    print("\n\n*** SILHOUETTE METHOD ***")
+    print("*** ELBOW METHOD ***")
+
+    print("Elbow Values: ", visualizer.elbow_score_)
+    print("K Values: ", visualizer.k_values_)
+    print("Distance Metric: ", visualizer.distance_metric)
+    print("Best K From Elbow Method: ", visualizer.elbow_value_)
+
+    print("\n\n\n*** SILHOUETTE METHOD ***")
 
     print("All Silhouette Scores For Three Different Metrics For Each K Number of Clusters: ")
     print(silhouetteScores)
@@ -482,11 +481,6 @@ def KMeansClustering(coffee: pd.DataFrame):
     coffee = getNumericalColumnsDataset(coffee)
     bestK, bestLabels = getKMeansClustersFullAnalysis(coffee, 10)
 
-    clusteringRelatedInsights(coffee, bestLabels)
-
-    #TODO CALL HERE CLUSTERING RELATED INSIGHTS FUNCTION
-
-
     return None
 
 
@@ -514,32 +508,32 @@ def KMeansClusteringPlot(clusteringData: pd.DataFrame, labels: list, K: int, var
     return f"Coffee{K}ClustersPairPlot", coffeeClustersPlot, AnalysisPlotsPath
 
 
-#TODO DECORATE WITH SAVEPLOTS
+#TODO DECORATE WITH SAVEPLOTS, CALL THE FUNCTION IN THE CLUSTERING FOR LOOP
 def clusteringRelatedInsights(data: pd.DataFrame, labels: list):
 
     data["ClusterLabel"] = labels
 
-    threeD = px.scatter_3d(data, x='Aroma', y='Acidity', z='Flavor', color='ClusterLabel', color_discrete_map=pairedColorScale, title="Aroma, Acidity and Flavor with Markers Colored by Cluster")
-    #TODO RENAME AND SAVE threeD
-
-
+    threeDVariablesAndClustersViz = px.scatter_3d(data, x='Aroma', y='Acidity', z='Flavor', color='ClusterLabel', color_discrete_map=pairedColorScale, title=f"Aroma, Acidity and Flavor with Markers Colored by Cluster For {max(data["ClusterLabel"])+1} Clusters")
 
     print("\n\n\n")
 
     #------------- Cluster-based insights -------------
 
-    #Acidity
-    averageAcidityByCluster = data[["Acidity", "ClusterLabel"]].groupby("ClusterLabel", sort=True, as_index=False).mean()
-    print("Average Acidity by Cluster:\n", averageAcidityByCluster, "\n")
+    insightsVariables = ["Aroma", "Flavor", "Aftertaste", "Acidity", "Body", "CleanCup", "Sweetness"]
 
-    stdAcidityByCluster = data[["Acidity", "ClusterLabel"]].groupby("ClusterLabel", sort=True, as_index=False).std()
-    print("Acidity Standard Deviation by Cluster:\n", stdAcidityByCluster, "\n")
+    for ins in insightsVariables:
 
-    sfpAcidityByCluster = data[["Acidity", "ClusterLabel"]].groupby("ClusterLabel", sort=True, as_index=False).apply(lambda x: np.percentile(x, 75)) #Seventyfifth percentile
-    print("Acidity 75th Distribution Percentile by Cluster:\n", sfpAcidityByCluster, "\n")
+        averageXByCluster = data[[ins, "ClusterLabel"]].groupby("ClusterLabel", sort=True, as_index=False).mean()
+        print("Average Acidity by Cluster:\n", averageXByCluster, "\n")
 
-    ntAcidityByCluster = data[["Acidity", "ClusterLabel"]].groupby("ClusterLabel", sort=True, as_index=False).apply(lambda x: np.percentile(x, 90)) #Ninetith percentile
-    print("Acidity 90th Distribution Percentile by Cluster:\n", ntAcidityByCluster, "\n")
+        stdXByCluster = data[[ins, "ClusterLabel"]].groupby("ClusterLabel", sort=True, as_index=False).std()
+        print("Acidity Standard Deviation by Cluster:\n", stdXByCluster, "\n")
+
+        sfpXByCluster = data[[ins, "ClusterLabel"]].groupby("ClusterLabel", sort=True, as_index=False, index="75thPercentile").apply(lambda x: np.percentile(x, 75)) #Seventyfifth percentile
+        print("Acidity 75th Distribution Percentile by Cluster:\n", sfpXByCluster, "\n")
+
+        ntXByCluster = data[[ins, "ClusterLabel"]].groupby("ClusterLabel", sort=True, as_index=False, index="90thPercentile").apply(lambda x: np.percentile(x, 90)) #Ninetith percentile
+        print("Acidity 90th Distribution Percentile by Cluster:\n", ntXByCluster, "\n")
 
 
     #TODO BARPLOTS AND SOMETHING ELSE
