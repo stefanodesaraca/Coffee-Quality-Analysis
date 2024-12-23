@@ -532,56 +532,59 @@ def clusteringRelatedInsights(data: pd.DataFrame, catData: pd.DataFrame, labels:
     threeDVariablesAndClustersViz = px.scatter_3d(data, x='Aroma', y='Acidity', z='Flavor', color='ClusterLabel', color_discrete_map=pairedColorScale, title=f"Aroma, Acidity and Flavor with Markers Colored by Cluster For {max(data["ClusterLabel"])+1} Clusters")
     threeDVariablesAndClustersViz.to_html(f"{K}-ClustersThreeD.html")
 
-    #------------------- Multiple pie plot clustering and coffee varieties visualization -------------------
 
-    #The varietyCountByCluster dictionary contains a counter of observations for each variety to understand how many of each one have been assigned to a certain cluster
-    varietyCountByCluster = {} #To get the number of clusters we'll just take the maximum key + 1 (since the cluster labels start from 0)
-    varietyPercentageByCluster = {} #The varietyPercentageByCluster contains the percentage of each variety in the cluster itself (NOT the percentage relative to the total of all observations)
+    #------------------- Multiple pie plot clustering and coffee categorical variables insights visualization -------------------
 
-    varieties = list(data["Variety"].unique())
-    #print("Unique Varieties: ", varieties)
+    catDataVars = catData.columns.tolist()
 
+    #The varietyCountByCluster dictionary contains a counter of observations for each value of the categorical variable to understand how many of each one have been assigned to a certain cluster
+    catVarCountByCluster = {} #To get the number of clusters we'll just take the maximum key + 1 (since the cluster labels start from 0)
+    catVarPercentageByCluster = {} #The catVarByCluster contains the percentage of each value of the categorical variable in the cluster itself (NOT the percentage relative to the total of all observations)
 
-    #Creating a dictionary for each cluster
-    #Every cluster dictionary contains all varieties, each variety is a dictionary with a counter which by default starts from 0
-    for clusterNum in range(K):
+    for catV in catDataVars:
+        catVarUniques = list(data[catV].unique())
+        print(f"Unique {catV}: ", catVarUniques)
 
-        varietyCountByCluster.update({clusterNum: {}})
-        varietyPercentageByCluster.update({clusterNum: {}})
+        #Creating a dictionary for each cluster
+        #Every cluster dictionary contains all values of the categorical variable, each value is a dictionary with a counter which by default starts from 0
+        for clusterNum in range(K):
 
-        for var in varieties:
-            varietyCountByCluster[clusterNum].update({var: 0})
-            varietyPercentageByCluster[clusterNum].update({var: 0.00})
+            catVarCountByCluster.update({clusterNum: {}})
+            catVarPercentageByCluster.update({clusterNum: {}})
 
-
-    #When executing this loop we'll check both the variety and cluster label of the row
-    #We'll update the variety counter of the row's variety in the cluster's dictionary which was described previously
-    for v, cl in zip(data["Variety"], data["ClusterLabel"]):
-
-        varietyCount = varietyCountByCluster[cl][v]
-        varietyCountByCluster[cl][v] = varietyCount + 1
+            for val in catVarUniques:
+                catVarCountByCluster[clusterNum].update({val: 0})
+                catVarPercentageByCluster[clusterNum].update({val: 0.00})
 
 
-    for cluster, varietiesDict in varietyCountByCluster.items():
-        #print("Cluster: ", cluster)
+        #When executing this loop we'll check both the categorical variable value and cluster label of the row
+        #We'll update the value counter of the row's variety in the cluster's dictionary which was described previously
+        for v, cl in zip(data[catV], data["ClusterLabel"]):
 
-        totalClusterObservations = len(data[data["ClusterLabel"] == cluster])
-        print(f"Total Observations For Cluster Label: {cluster} = ", totalClusterObservations)
-
-        for var, counter in varietiesDict.items():
-
-            percentage = np.round(counter/totalClusterObservations * 100, decimals=2).astype("float64")
-            varietyPercentageByCluster[cluster][var] = percentage
+            catVCount = catVarCountByCluster[cl][v]
+            catVarCountByCluster[cl][v] = catVCount + 1
 
 
+        for cluster, catVDict in catVarCountByCluster.items():
+            #print("Cluster: ", cluster)
 
-    print(f"Varieties Count By Cluster For K={K}")
-    print(varietyCountByCluster, "\n")
-    #pp.pprint(varietiesByCluster)
+            totalClusterObservations = len(data[data["ClusterLabel"] == cluster])
+            print(f"Total Observations For Cluster Label: {cluster} = ", totalClusterObservations)
 
-    print(f"Varieties Percentage By Cluster For K={K}")
-    print(varietyPercentageByCluster)
-    #pp.pprint(varietyPercentageByCluster)
+            for val, counter in catVDict.items():
+
+                percentage = np.round(counter/totalClusterObservations * 100, decimals=2).astype("float64")
+                catVarPercentageByCluster[cluster][val] = percentage
+
+
+
+        print(f"{catV} Count By Cluster For K={K}")
+        print(catVarCountByCluster, "\n")
+        #pp.pprint(catVarCountByCluster)
+
+        print(f"{catV} Percentage By Cluster For K={K}")
+        print(catVarPercentageByCluster)
+        #pp.pprint(catVarPercentageByCluster)
 
 
 
