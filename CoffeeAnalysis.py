@@ -516,8 +516,6 @@ def clusteringRelatedInsights(data: pd.DataFrame, labels: list):
 
     threeDVariablesAndClustersViz = px.scatter_3d(data, x='Aroma', y='Acidity', z='Flavor', color='ClusterLabel', color_discrete_map=pairedColorScale, title=f"Aroma, Acidity and Flavor with Markers Colored by Cluster For {max(data["ClusterLabel"])+1} Clusters")
 
-    print("\n\n\n")
-
 
     #------------- Cluster-based insights -------------
 
@@ -525,19 +523,25 @@ def clusteringRelatedInsights(data: pd.DataFrame, labels: list):
 
     for ins in insightsVariables:
 
-        print(f"{ins}Insights by Cluster for K={max(data["ClusterLabel"])+1}")
+        print(f"------------------------- {ins} Insights by Cluster for K={max(data["ClusterLabel"])+1} -------------------------")
 
-        averageXByCluster = data[[ins, "ClusterLabel"]].groupby("ClusterLabel", sort=True, as_index=False, dropna=True).mean()
-        print(f"Average {ins} by Cluster:\n", averageXByCluster, "\n")
+        averageXByCluster = data[[ins, "ClusterLabel"]].groupby("ClusterLabel", sort=True, as_index=False, dropna=True).mean().rename(columns={f"{ins}": f"Average{ins}"})
+        #print(f"Average {ins} by Cluster:\n", averageXByCluster, "\n")
 
-        stdXByCluster = data[[ins, "ClusterLabel"]].groupby("ClusterLabel", sort=True, as_index=False, dropna=True ).std()
-        print(f"{ins} Standard Deviation by Cluster:\n", stdXByCluster, "\n")
+        stdXByCluster = data[[ins, "ClusterLabel"]].groupby("ClusterLabel", sort=True, as_index=False, dropna=True ).std().rename(columns={f"{ins}": f"STD{ins}"})
+        #print(f"{ins} Standard Deviation by Cluster:\n", stdXByCluster, "\n")
 
         sfpXByCluster = data[[ins, "ClusterLabel"]].groupby("ClusterLabel", sort=True, as_index=False, dropna=True).apply(lambda x: np.percentile(x, 75)).rename(columns={None: "75thPercentile"}) #Seventyfifth percentile
-        print(f"{ins} 75th Distribution Percentile by Cluster:\n", sfpXByCluster, "\n")
+        #print(f"{ins} 75th Distribution Percentile by Cluster:\n", sfpXByCluster, "\n")
 
         ntXByCluster = data[[ins, "ClusterLabel"]].groupby("ClusterLabel", sort=True, as_index=False, dropna=True).apply(lambda x: np.percentile(x, 90)).rename(columns={None: "90thPercentile"}) #Ninetith percentile
-        print(f"{ins} 90th Distribution Percentile by Cluster:\n", ntXByCluster, "\n")
+        #print(f"{ins} 90th Distribution Percentile by Cluster:\n", ntXByCluster, "\n")
+
+        insightsTable = pd.concat([averageXByCluster, stdXByCluster, sfpXByCluster, ntXByCluster], axis=1, join="inner")
+        insightsTable = insightsTable.loc[:, ~insightsTable.columns.duplicated()].copy() #Removing duplicated columns
+        print(insightsTable)
+
+        print("-------------------------------------------------------------------------------\n\n")
 
 
     #TODO BARPLOTS AND SOMETHING ELSE
