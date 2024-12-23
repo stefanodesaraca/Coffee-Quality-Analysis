@@ -1,7 +1,9 @@
 import os
 import json
 import inspect
+import math
 
+from matplotlib.pyplot import figure
 from pandas.core.common import random_state
 from scipy import stats
 import pandas as pd
@@ -110,7 +112,7 @@ def EDA(coffee: pd.DataFrame):
     print("*** NAs BY COLUMN ***")
     print(coffee.isna().sum(), "\n")
 
-    print("*** SHORT OVERVIEW OF THE DATSET ***")
+    print("*** SHORT OVERVIEW OF THE DATASET ***")
     print(coffee.describe())
 
     print("-------------------- EDA --------------------")
@@ -431,7 +433,7 @@ def getKMeansClustersFullAnalysis(data: pd.DataFrame, maxK: int):
             bestKMetricsAndScores.update({s: {}})
             bestKMetricsAndScores[s].update({bestMetric: bestScore}) #Creating a dictionary which contains the best metric and corresponding score for K clusters
 
-        clusteringRelatedInsights(data, labels)
+        clusteringRelatedInsights(data, labels, K=s)
 
     labelFeatures = [f"K{i}ClusterLabel" for i in range(2, maxK+1)]
     data.drop(columns=labelFeatures, inplace=True) #Removing cluster label features from the dataframe
@@ -510,16 +512,50 @@ def KMeansClusteringPlot(clusteringData: pd.DataFrame, labels: list, K: int, var
 
 
 #TODO DECORATE WITH SAVEPLOTS, CALL THE FUNCTION IN THE CLUSTERING FOR LOOP
-def clusteringRelatedInsights(data: pd.DataFrame, labels: list):
+def clusteringRelatedInsights(data: pd.DataFrame, labels: list, K: int):
 
     data["ClusterLabel"] = labels
 
+    #------------------- Three-dimensional clustering visualization with Aroma, Acidity and Flavor -------------------
     threeDVariablesAndClustersViz = px.scatter_3d(data, x='Aroma', y='Acidity', z='Flavor', color='ClusterLabel', color_discrete_map=pairedColorScale, title=f"Aroma, Acidity and Flavor with Markers Colored by Cluster For {max(data["ClusterLabel"])+1} Clusters")
+
+    #TODO MULTIPLE PIE PLOTS WITH PERCENTAGES OF VARIETIES BY EACH CLUSTER, EVERY PIE IS A CLUSTER
+
+
+    #------------------- Multiple pie plot clustering and coffee varieties visualization -------------------
+
+    rows = math.ceil(K/2)
+    cols = math.floor(K/2)
+
+    print("Rows:", rows)
+    print("Cols:", cols)
+
+    fig, axes = plt.subplots(nrows=rows, ncols=cols, figsize=(16, 9))
+
+    ax1 = 0
+    ax2 = 0
+
+    #This for cycle loops up to rows-1, so it's ok since the plot's axes start counting from 0
+    for coord in range(0, rows):
+
+        axes[ax1, ax2].pie() #TODO ADD THINGS
+        axes[ax1, ax2].set_title()
+        axes[ax1, ax2].set_xlabel()
+        axes[ax1, ax2].set_ylabel()
+
+        if coord % 2 == 0: ax1 += 1
+        if coord % 2 == 1: ax2 += 1
+
+        print(ax1)
+        print(ax2)
+
+
+
 
 
     #------------- Cluster-based insights -------------
 
-    insightsVariables = ["Aroma", "Flavor", "Aftertaste", "Acidity", "Body", "CleanCup", "Sweetness"]
+    insightsVariables = ['Aroma', 'Flavor', 'Aftertaste', 'Acidity', 'Body', 'CleanCup', 'Uniformity', 'Sweetness']
 
     for ins in insightsVariables:
 
@@ -543,8 +579,6 @@ def clusteringRelatedInsights(data: pd.DataFrame, labels: list):
 
         print("-------------------------------------------------------------------------------\n\n")
 
-
-    #TODO BARPLOTS AND SOMETHING ELSE
 
     insightPlots = [threeDVariablesAndClustersViz]
 
