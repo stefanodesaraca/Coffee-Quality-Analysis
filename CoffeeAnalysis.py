@@ -2,6 +2,7 @@ import os
 import json
 import inspect
 import math
+import pprint
 
 from matplotlib.pyplot import figure
 from pandas.core.common import random_state
@@ -53,16 +54,16 @@ def savePlots(plotFunction):
     def checkPlotsTypeAndSave(plotName, plots, filePath):
         if isinstance(plots, (plt.Figure, plt.Axes, sns.axisgrid.FacetGrid, sns.axisgrid.PairGrid, list)):
             plt.savefig(f"{filePath}{plotName}.png", dpi=300)
-            print(f"{plotName} Exported Correctly")
+            #print(f"{plotName} Exported Correctly")
 
         elif isinstance(plots, plotly.graph_objs._figure.Figure):
             plots.write_html(f"{filePath}{plotName}.html")
-            print(f"{plotName} Exported Correctly")
+            #print(f"{plotName} Exported Correctly")
 
         else:
             try:
                 plt.savefig(f"{filePath}{plotName}.png", dpi=300)
-                print(f"{plotName}.png Exported Correctly")
+                #print(f"{plotName}.png Exported Correctly")
             except:
                 print("\033[91mExporting the plots wasn't possible, the returned type is not included between the ones treatable from the decorator function\033[0m")
 
@@ -329,7 +330,7 @@ def MLXTPrincipalComponents(data: pd.DataFrame):
     return None
 
 
-def getKMeansClustersFullAnalysis(data: pd.DataFrame, maxK: int):
+def getKMeansClustersFullAnalysis(data: pd.DataFrame, insightsCategoricalData: pd.DataFrame, maxK: int):
 
     #-------------------------- Useful data for later plotting --------------------------
 
@@ -393,6 +394,8 @@ def getKMeansClustersFullAnalysis(data: pd.DataFrame, maxK: int):
     visualizer.show(outpath=f"{AnalysisPlotsPath}KMeansAutomaticElbowPlot.png")
 
 
+    print("Total Observations: ", len(data), "\n\n")
+
     #Silhouette method
 
     silhouetteScores = {}
@@ -433,7 +436,11 @@ def getKMeansClustersFullAnalysis(data: pd.DataFrame, maxK: int):
             bestKMetricsAndScores.update({s: {}})
             bestKMetricsAndScores[s].update({bestMetric: bestScore}) #Creating a dictionary which contains the best metric and corresponding score for K clusters
 
-        clusteringRelatedInsights(data, labels, K=s)
+
+        print(f"********** CLUSTERS DATA FOR K={s} **********")
+        clusteringRelatedInsights(data, insightsCategoricalData, labels, K=s)
+        print(f"**********************************************")
+
 
     labelFeatures = [f"K{i}ClusterLabel" for i in range(2, maxK+1)]
     data.drop(columns=labelFeatures, inplace=True) #Removing cluster label features from the dataframe
@@ -481,8 +488,10 @@ def getKMeansClustersFullAnalysis(data: pd.DataFrame, maxK: int):
 
 def KMeansClustering(coffee: pd.DataFrame):
 
+    insightsCatData = coffee[["Origin", "Variety", "ISO3166A2"]]
+
     coffee = getNumericalColumnsDataset(coffee)
-    bestK, bestLabels = getKMeansClustersFullAnalysis(coffee, 10)
+    bestK, bestLabels = getKMeansClustersFullAnalysis(coffee, insightsCatData, 10)
 
     return None
 
@@ -512,17 +521,69 @@ def KMeansClusteringPlot(clusteringData: pd.DataFrame, labels: list, K: int, var
 
 
 #TODO DECORATE WITH SAVEPLOTS, CALL THE FUNCTION IN THE CLUSTERING FOR LOOP
-def clusteringRelatedInsights(data: pd.DataFrame, labels: list, K: int):
+def clusteringRelatedInsights(data: pd.DataFrame, catData: pd.DataFrame, labels: list, K: int):
 
+    pp = pprint.PrettyPrinter(depth=4)
+
+    data = pd.merge(data, catData, on=data.index, how="inner")
     data["ClusterLabel"] = labels
 
     #------------------- Three-dimensional clustering visualization with Aroma, Acidity and Flavor -------------------
     threeDVariablesAndClustersViz = px.scatter_3d(data, x='Aroma', y='Acidity', z='Flavor', color='ClusterLabel', color_discrete_map=pairedColorScale, title=f"Aroma, Acidity and Flavor with Markers Colored by Cluster For {max(data["ClusterLabel"])+1} Clusters")
-
-    #TODO MULTIPLE PIE PLOTS WITH PERCENTAGES OF VARIETIES BY EACH CLUSTER, EVERY PIE IS A CLUSTER
-
+    threeDVariablesAndClustersViz.to_html(f"{K}-ClustersThreeD.html")
 
     #------------------- Multiple pie plot clustering and coffee varieties visualization -------------------
+
+    #The varietyCountByCluster dictionary contains a counter of observations for each variety to understand how many of each one have been assigned to a certain cluster
+    varietyCountByCluster = {} #To get the number of clusters we'll just take the maximum key + 1 (since the cluster labels start from 0)
+    varietyPercentageByCluster = {} #The varietyPercentageByCluster contains the percentage of each variety in the cluster itself (NOT the percentage relative to the total of all observations)
+
+    varieties = list(data["Variety"].unique())
+    #print("Unique Varieties: ", varieties)
+
+
+    #Creating a dictionary for each cluster
+    #Every cluster dictionary contains all varieties, each variety is a dictionary with a counter which by default starts from 0
+    for clusterNum in range(K):
+
+        varietyCountByCluster.update({clusterNum: {}})
+        varietyPercentageByCluster.update({clusterNum: {}})
+
+        for var in varieties:
+            varietyCountByCluster[clusterNum].update({var: 0})
+            varietyPercentageByCluster[clusterNum].update({var: 0.00})
+
+
+    #When executing this loop we'll check both the variety and cluster label of the row
+    #We'll update the variety counter of the row's variety in the cluster's dictionary which was described previously
+    for v, cl in zip(data["Variety"], data["ClusterLabel"]):
+
+        varietyCount = varietyCountByCluster[cl][v]
+        varietyCountByCluster[cl][v] = varietyCount + 1
+
+
+    for cluster, varietiesDict in varietyCountByCluster.items():
+        #print("Cluster: ", cluster)
+
+        totalClusterObservations = len(data[data["ClusterLabel"] == cluster])
+        print(f"Total Observations For Cluster Label: {cluster} = ", totalClusterObservations)
+
+        for var, counter in varietiesDict.items():
+
+            percentage = np.round(counter/totalClusterObservations * 100, decimals=2).astype("float64")
+            varietyPercentageByCluster[cluster][var] = percentage
+
+
+
+    print(f"Varieties Count By Cluster For K={K}")
+    print(varietyCountByCluster, "\n")
+    #pp.pprint(varietiesByCluster)
+
+    print(f"Varieties Percentage By Cluster For K={K}")
+    print(varietyPercentageByCluster)
+    #pp.pprint(varietyPercentageByCluster)
+
+
 
     rows = math.ceil(K/2)
     cols = math.floor(K/2)
@@ -538,6 +599,9 @@ def clusteringRelatedInsights(data: pd.DataFrame, labels: list, K: int):
     #This for cycle loops up to rows-1, so it's ok since the plot's axes start counting from 0
     for coord in range(0, rows):
 
+        print(ax1)
+        print(ax2)
+
         axes[ax1, ax2].pie() #TODO ADD THINGS
         axes[ax1, ax2].set_title()
         axes[ax1, ax2].set_xlabel()
@@ -546,8 +610,7 @@ def clusteringRelatedInsights(data: pd.DataFrame, labels: list, K: int):
         if coord % 2 == 0: ax1 += 1
         if coord % 2 == 1: ax2 += 1
 
-        print(ax1)
-        print(ax2)
+
 
 
 
