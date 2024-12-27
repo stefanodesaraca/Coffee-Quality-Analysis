@@ -305,7 +305,7 @@ def MLXTPrincipalComponents(data: pd.DataFrame):
 
     print("Principal Components and Explained Variance: ")
     print(list(MLXTPCAExplainedVarianceResults))
-    print("\n")
+    #print("\n")
 
     #print("Loading Scores: ")
     #print(pca.loadings_)
@@ -536,12 +536,14 @@ def clusteringRelatedInsights(data: pd.DataFrame, catData: pd.DataFrame, labels:
     #------------------- Multiple pie plot clustering and coffee categorical variables insights visualization -------------------
 
     catDataVars = catData.columns.tolist()
-
-    #The varietyCountByCluster dictionary contains a counter of observations for each value of the categorical variable to understand how many of each one have been assigned to a certain cluster
-    catVarCountByCluster = {} #To get the number of clusters we'll just take the maximum key + 1 (since the cluster labels start from 0)
-    catVarPercentageByCluster = {} #The catVarByCluster contains the percentage of each value of the categorical variable in the cluster itself (NOT the percentage relative to the total of all observations)
+    catVarUniques = None
 
     for catV in catDataVars:
+
+        #The catVarCountByCluster dictionary contains a counter of observations for each value of the categorical variable to understand how many of each one have been assigned to a certain cluster
+        catVarCountByCluster = {} #To get the number of clusters we'll just take the maximum key + 1 (since the cluster labels start from 0)
+        catVarPercentageByCluster = {} #The catVarByCluster contains the percentage of each value of the categorical variable in the cluster itself (NOT the percentage relative to the total of all observations)
+
         catVarUniques = list(data[catV].unique())
         print(f"Unique {catV}: ", catVarUniques)
 
@@ -578,40 +580,47 @@ def clusteringRelatedInsights(data: pd.DataFrame, catData: pd.DataFrame, labels:
 
 
 
-        print(f"{catV} Count By Cluster For K={K}")
-        print(catVarCountByCluster, "\n")
+        print(f"\n{catV} Unique Values Count By Cluster For K={K}")
+        print(catVarCountByCluster)
         #pp.pprint(catVarCountByCluster)
 
-        print(f"{catV} Percentage By Cluster For K={K}")
+        print(f"{catV} Unique Values Percentage By Cluster For K={K}")
         print(catVarPercentageByCluster)
         #pp.pprint(catVarPercentageByCluster)
 
 
 
-    rows = math.ceil(K/2)
-    cols = math.floor(K/2)
+        rows = max(2, math.ceil(K/2)) #Rounding up to the higher integer
+        cols = max(2, math.floor(K/2)) #Rounding up to the lower integer
+        #Important: the max function is used because the minimum number of clusters is 2, and 2/2 equals 1, but that's a problem in our use case
+        #It would be a problem for the rows or cols to both equal to 1 since if matplotlib's subplots() function receives both nrows=1 and ncols=1 it returns a single Axes object and not a 2D array
 
-    print("Rows:", rows)
-    print("Cols:", cols)
+        print("Rows:", rows)
+        print("Cols:", cols)
 
-    fig, axes = plt.subplots(nrows=rows, ncols=cols, figsize=(16, 9))
 
-    ax1 = 0
-    ax2 = 0
+        for var in catDataVars:
 
-    #This for cycle loops up to rows-1, so it's ok since the plot's axes start counting from 0
-    for coord in range(0, rows):
+            fig, axes = plt.subplots(nrows=rows, ncols=cols, figsize=(16, 9))
 
-        print(ax1)
-        print(ax2)
+            ax1 = 0
+            ax2 = 0
 
-        axes[ax1, ax2].pie() #TODO ADD THINGS
-        axes[ax1, ax2].set_title()
-        axes[ax1, ax2].set_xlabel()
-        axes[ax1, ax2].set_ylabel()
+            for kth in range(K):
 
-        if coord % 2 == 0: ax1 += 1
-        if coord % 2 == 1: ax2 += 1
+                print(ax1)
+                print(ax2)
+
+                axes[ax1, ax2].pie(list(catVarCountByCluster[kth].values()), labels=list(catVarPercentageByCluster[kth].keys()))
+                axes[ax1, ax2].set_title(f"{var} Unique Values Count by Cluster for K Clusters: {K}")
+                axes[ax1, ax2].set_ylabel(f"{var} Count")
+
+                if ax1 % 2 == 0:
+                    ax1 += 1 #If the number is even, then increase the X axis value by 1 unit
+                else:
+                    ax2 += 1 #If the number is odd, then increase the Y axis value by 1 unit
+
+
 
 
 
