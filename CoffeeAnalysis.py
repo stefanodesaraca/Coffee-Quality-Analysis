@@ -437,9 +437,8 @@ def getKMeansClustersFullAnalysis(data: pd.DataFrame, insightsCategoricalData: p
             bestKMetricsAndScores[s].update({bestMetric: bestScore}) #Creating a dictionary which contains the best metric and corresponding score for K clusters
 
 
-        print(f"********** CLUSTERS DATA FOR K={s} **********")
+        print(f"******************** CLUSTERS DATA FOR K={s} ********************")
         clusteringRelatedInsights(data, insightsCategoricalData, labels, K=s)
-        print(f"**********************************************")
 
 
     labelFeatures = [f"K{i}ClusterLabel" for i in range(2, maxK+1)]
@@ -532,93 +531,77 @@ def clusteringRelatedInsights(data: pd.DataFrame, catData: pd.DataFrame, labels:
     threeDVariablesAndClustersViz = px.scatter_3d(data, x='Aroma', y='Acidity', z='Flavor', color='ClusterLabel', color_discrete_map=pairedColorScale, title=f"Aroma, Acidity and Flavor with Markers Colored by Cluster For {max(data["ClusterLabel"])+1} Clusters")
     threeDVariablesAndClustersViz.to_html(f"{K}-ClustersThreeD.html")
 
+    clusterNObs = {}
 
-    #------------------- Multiple pie plot clustering and coffee categorical variables insights visualization -------------------
+    categoricalVariables = catData.columns.tolist()
+    catUniques = None
 
-    catDataVars = catData.columns.tolist()
-    catVarUniques = None
+    for var in categoricalVariables:
 
-    for catV in catDataVars:
+        catUniques = list(data[var].unique()) #All the unique categorical values of the "var" variable
+        #print(f"Unique {var}: ", categoricalVariableUniques)
 
         #The catVarCountByCluster dictionary contains a counter of observations for each value of the categorical variable to understand how many of each one have been assigned to a certain cluster
         catVarCountByCluster = {} #To get the number of clusters we'll just take the maximum key + 1 (since the cluster labels start from 0)
         catVarPercentageByCluster = {} #The catVarByCluster contains the percentage of each value of the categorical variable in the cluster itself (NOT the percentage relative to the total of all observations)
 
-        catVarUniques = list(data[catV].unique())
-        print(f"Unique {catV}: ", catVarUniques)
-
         #Creating a dictionary for each cluster
-        #Every cluster dictionary contains all values of the categorical variable, each value is a dictionary with a counter which by default starts from 0
-        for clusterNum in range(K):
+        #Every cluster dictionary contains all possible values of the categorical variable, each value is a dictionary with a counter which by default starts from 0
+        for Kth in range(K): #The Kth cluster for each iteration
 
-            catVarCountByCluster.update({clusterNum: {}})
-            catVarPercentageByCluster.update({clusterNum: {}})
+            catVarCountByCluster.update({Kth: {}})
+            catVarPercentageByCluster.update({Kth: {}})
 
-            for val in catVarUniques:
-                catVarCountByCluster[clusterNum].update({val: 0})
-                catVarPercentageByCluster[clusterNum].update({val: 0.00})
+            for val in catUniques:
+                catVarCountByCluster[Kth].update({val: 0})
+                catVarPercentageByCluster[Kth].update({val: 0.00})
 
 
         #When executing this loop we'll check both the categorical variable value and cluster label of the row
-        #We'll update the value counter of the row's variety in the cluster's dictionary which was described previously
-        for v, cl in zip(data[catV], data["ClusterLabel"]):
+        #We'll increase the counter of the row's unique categorical variable in the cluster's dictionary which was described previously
+        for v, cl in zip(data[var], data["ClusterLabel"]):
 
             catVCount = catVarCountByCluster[cl][v]
             catVarCountByCluster[cl][v] = catVCount + 1
 
 
         for cluster, catVDict in catVarCountByCluster.items():
-            #print("Cluster: ", cluster)
 
             totalClusterObservations = len(data[data["ClusterLabel"] == cluster])
-            print(f"Total Observations For Cluster Label: {cluster} = ", totalClusterObservations)
+            clusterNObs.update({cluster: totalClusterObservations})
 
             for val, counter in catVDict.items():
 
                 percentage = np.round(counter/totalClusterObservations * 100, decimals=2).astype("float64")
-                catVarPercentageByCluster[cluster][val] = percentage
+
+                #If there aren't any observations with this specific categorical value then it's useless to keep them in the dictionary, then we'll just delete the key-value pair previously created
+                if percentage == 0.00:
+                    del catVarPercentageByCluster[cluster][val]
+                else:
+                    catVarPercentageByCluster[cluster][val] = percentage
 
 
-
-        print(f"\n{catV} Unique Values Count By Cluster For K={K}")
+        print(f"\n{var} Unique Values Count By Cluster For K={K}")
         print(catVarCountByCluster)
         #pp.pprint(catVarCountByCluster)
 
-        print(f"{catV} Unique Values Percentage By Cluster For K={K}")
+        print(f"{var} Unique Values Percentage By Cluster For K={K}")
         print(catVarPercentageByCluster)
         #pp.pprint(catVarPercentageByCluster)
 
+    print("\n")
+
+    for clN in clusterNObs.keys():
+        print(f"Total Observations For Cluster Label: {clN}  = ", clusterNObs[clN])
 
 
-        rows = max(2, math.ceil(K/2)) #Rounding up to the higher integer
-        cols = max(2, math.floor(K/2)) #Rounding up to the lower integer
-        #Important: the max function is used because the minimum number of clusters is 2, and 2/2 equals 1, but that's a problem in our use case
-        #It would be a problem for the rows or cols to both equal to 1 since if matplotlib's subplots() function receives both nrows=1 and ncols=1 it returns a single Axes object and not a 2D array
-
-        print("Rows:", rows)
-        print("Cols:", cols)
+    print("\n\n")
 
 
-        for var in catDataVars:
 
-            fig, axes = plt.subplots(nrows=rows, ncols=cols, figsize=(16, 9))
 
-            ax1 = 0
-            ax2 = 0
 
-            for kth in range(K):
-
-                print(ax1)
-                print(ax2)
-
-                axes[ax1, ax2].pie(list(catVarCountByCluster[kth].values()), labels=list(catVarPercentageByCluster[kth].keys()))
-                axes[ax1, ax2].set_title(f"{var} Unique Values Count by Cluster for K Clusters: {K}")
-                axes[ax1, ax2].set_ylabel(f"{var} Count")
-
-                if ax1 % 2 == 0:
-                    ax1 += 1 #If the number is even, then increase the X axis value by 1 unit
-                else:
-                    ax2 += 1 #If the number is odd, then increase the Y axis value by 1 unit
+        #TODO DELETE ZERO COUNT OR PERCENTAGE KEY-VALUE PAIRS
 
 
 
