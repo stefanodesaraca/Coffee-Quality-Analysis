@@ -541,58 +541,58 @@ def clusteringRelatedInsights(data: pd.DataFrame, catData: pd.DataFrame, labels:
         catUniques = list(data[var].unique()) #All the unique categorical values of the "var" variable
         #print(f"Unique {var}: ", categoricalVariableUniques)
 
-        #The catVarCountByCluster dictionary contains a counter of observations for each value of the categorical variable to understand how many of each one have been assigned to a certain cluster
-        catVarCountByCluster = {} #To get the number of clusters we'll just take the maximum key + 1 (since the cluster labels start from 0)
-        catVarPercentageByCluster = {} #The catVarByCluster contains the percentage of each value of the categorical variable in the cluster itself (NOT the percentage relative to the total of all observations)
+        #The varCountersByCluster dictionary contains a counter of observations for each value of the categorical variable to understand how many of each one have been assigned to a certain cluster
+        varCountersByCluster = {} #To get the number of clusters we'll just take the maximum key + 1 (since the cluster labels start from 0)
+        varPercentagesByCluster = {} #The catVarByCluster contains the percentage of each value of the categorical variable in the cluster itself (NOT the percentage relative to the total of all observations)
 
         #Creating a dictionary for each cluster
         #Every cluster dictionary contains all possible values of the categorical variable, each value is a dictionary with a counter which by default starts from 0
         for Kth in range(K): #The Kth cluster for each iteration
 
-            catVarCountByCluster.update({Kth: {}})
-            catVarPercentageByCluster.update({Kth: {}})
+            varCountersByCluster.update({Kth: {}})
+            varPercentagesByCluster.update({Kth: {}})
 
             for val in catUniques:
-                catVarCountByCluster[Kth].update({val: 0})
-                catVarPercentageByCluster[Kth].update({val: 0.00})
+                varCountersByCluster[Kth].update({val: 0})
+                varPercentagesByCluster[Kth].update({val: 0.00})
 
 
         #When executing this loop we'll check both the categorical variable value and cluster label of the row
         #We'll increase the counter of the row's unique categorical variable in the cluster's dictionary which was described previously
-        for v, cl in zip(data[var], data["ClusterLabel"]):
+        for uniq, cl in zip(data[var], data["ClusterLabel"]):
 
-            catVCount = catVarCountByCluster[cl][v]
-            catVarCountByCluster[cl][v] = catVCount + 1
+            uniqueCnt = varCountersByCluster[cl][uniq] #The counter of the unique value of the categorical variable
+            varCountersByCluster[cl][uniq] = uniqueCnt + 1
 
 
-        for cluster, catVDict in catVarCountByCluster.items():
+        for cluster, uniquesDict in varCountersByCluster.items():
 
             totalClusterObservations = len(data[data["ClusterLabel"] == cluster])
             clusterNObs.update({cluster: totalClusterObservations})
 
-            for val, counter in catVDict.items():
+            for val, counter in uniquesDict.items():
 
                 percentage = np.round(counter/totalClusterObservations * 100, decimals=2).astype("float64")
 
                 #If there aren't any observations with this specific categorical value then it's useless to keep them in the dictionary, then we'll just delete the key-value pair previously created
                 if percentage == 0.00:
-                    del catVarPercentageByCluster[cluster][val]
+                    del varPercentagesByCluster[cluster][val]
                 else:
-                    catVarPercentageByCluster[cluster][val] = percentage
+                    varPercentagesByCluster[cluster][val] = percentage
 
 
         print(f"\n{var} Unique Values Count By Cluster For K={K}")
-        print(catVarCountByCluster)
+        print(varCountersByCluster)
         #pp.pprint(catVarCountByCluster)
 
         print(f"{var} Unique Values Percentage By Cluster For K={K}")
-        print(catVarPercentageByCluster)
+        print(varPercentagesByCluster)
         #pp.pprint(catVarPercentageByCluster)
 
     print("\n")
 
     for clN in clusterNObs.keys():
-        print(f"Total Observations For Cluster Label: {clN}  = ", clusterNObs[clN])
+        print(f"Total Observations For Cluster Label: {clN} = ", clusterNObs[clN])
 
 
     print("\n\n")
