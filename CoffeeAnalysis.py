@@ -573,12 +573,16 @@ def clusteringRelatedInsights(data: pd.DataFrame, catData: pd.DataFrame, labels:
             for val, counter in uniquesDict.items():
 
                 percentage = np.round(counter/totalClusterObservations * 100, decimals=2).astype("float64")
+                varPercentagesByCluster[cluster][val] = percentage
 
-                #If there aren't any observations with this specific categorical value then it's useless to keep them in the dictionary, then we'll just delete the key-value pair previously created
-                if percentage == 0.00:
-                    del varPercentagesByCluster[cluster][val]
-                else:
-                    varPercentagesByCluster[cluster][val] = percentage
+        #c = cluster | v = value (meaning the value of the key-value pair taken in consideration and the ith iteration)
+        for c, v in zip(list(varCountersByCluster.keys()), list(varCountersByCluster.values())):
+            for value, uniqueCounter in zip(list(v.keys()), list(v.values())):
+
+                if uniqueCounter == 0:
+                    del varCountersByCluster[c][value]
+                    del varPercentagesByCluster[c][value]
+
 
 
         print(f"\n{var} Unique Values Count By Cluster For K={K}")
@@ -596,13 +600,6 @@ def clusteringRelatedInsights(data: pd.DataFrame, catData: pd.DataFrame, labels:
 
 
     print("\n\n")
-
-
-
-
-
-        #TODO DELETE ZERO COUNT OR PERCENTAGE KEY-VALUE PAIRS
-
 
 
 
