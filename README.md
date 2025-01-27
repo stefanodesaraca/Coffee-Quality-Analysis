@@ -3,9 +3,7 @@
 A complete clustering analysis of a coffee beans characteristics dataset.<br>
 The purpose of this project is to find out if coffee beans from different parts of the world have similar values across multiple variables and if we can actually group them in clusters based on the data of each type of bean.<br>
 
-Before executing the clustering analysis a PCA (Principal Component Analysis) is done to determine the variables which are most informative (the best ones to use for the clustering process, since they determine most of the variability in the data).
-
-<br>
+Before executing the clustering analysis a PCA (Principal Component Analysis) is done to determine the variables which are most informative (the best ones to use for the clustering process, since they determine most of the variability in the data).<br>
 
 
 <h4>Main Libraries Used for The Project<br></h4>
