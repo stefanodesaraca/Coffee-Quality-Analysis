@@ -20,7 +20,7 @@ Before executing the clustering analysis a PCA (Principal Component Analysis) is
 <li>Elbow Method</li>
 <li>Silhouette</li>
 
-<br><br>
+<br>
 
 <h4>Project Operation:</h4>
 
