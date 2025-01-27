@@ -519,7 +519,7 @@ def KMeansClusteringPlot(clusteringData: pd.DataFrame, labels: list, K: int, var
     return f"Coffee{K}ClustersPairPlot", coffeeClustersPlot, AnalysisPlotsPath
 
 
-#TODO DECORATE WITH SAVEPLOTS, CALL THE FUNCTION IN THE CLUSTERING FOR LOOP
+@savePlots
 def clusteringRelatedInsights(data: pd.DataFrame, catData: pd.DataFrame, labels: list, K: int):
 
     pp = pprint.PrettyPrinter(depth=4)
@@ -602,13 +602,7 @@ def clusteringRelatedInsights(data: pd.DataFrame, catData: pd.DataFrame, labels:
     print("\n\n")
 
 
-
-
-
-
-
-
-    #------------- Cluster-based insights -------------
+    #------------- Cluster-related insights -------------
 
     insightsVariables = ['Aroma', 'Flavor', 'Aftertaste', 'Acidity', 'Body', 'CleanCup', 'Uniformity', 'Sweetness']
 
@@ -636,9 +630,9 @@ def clusteringRelatedInsights(data: pd.DataFrame, catData: pd.DataFrame, labels:
 
 
     insightPlots = [threeDVariablesAndClustersViz]
+    insightPlotsNames = [f"{K}-ClustersThreeD"]
 
-
-    return
+    return insightPlotsNames, insightPlots, AnalysisPlotsPath
 
 
 
